@@ -29,14 +29,15 @@ export default function LoginPage() {
       const result = await signIn('credentials', {
         email: formData.email,
         password: formData.password,
+        callbackUrl: '/dashboard',
         redirect: false,
       })
 
       if (result?.error) {
         setError('Invalid email or password. Please check if you have verified your email.')
-      } else {
-        router.push('/dashboard')
-        router.refresh()
+      } else if (result?.ok) {
+        // Successful login - redirect to dashboard
+        window.location.href = '/dashboard'
       }
     } catch (err) {
       setError('An error occurred. Please try again.')
