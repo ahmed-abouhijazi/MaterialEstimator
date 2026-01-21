@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useState } from "react"
 import { useSession, signOut } from "next-auth/react"
+import { useLocale } from "@/lib/locale-context"
 import { Button } from "@/components/ui/button"
 import { Menu, X, HardHat, LogOut, User, Settings } from "lucide-react"
 import {
@@ -17,6 +18,7 @@ import { LanguageSwitcher } from "@/components/language-switcher"
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { data: session } = useSession()
+  const { t } = useLocale()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b-2 border-secondary bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -33,16 +35,16 @@ export function Header() {
         {/* Desktop Navigation */}
         <nav className="hidden items-center gap-6 md:flex">
           <Link href="/estimator" className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary">
-            Estimator
+            {t('nav.estimator')}
           </Link>
           <Link href="/dashboard" className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary">
-            Dashboard
+            {t('nav.dashboard')}
           </Link>
           <Link href="/pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary">
-            Pricing
+            {t('nav.pricing')}
           </Link>
           <Link href="/how-it-works" className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary">
-            How It Works
+            {t('nav.howItWorks')}
           </Link>
         </nav>
 
@@ -63,18 +65,18 @@ export function Header() {
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard">Dashboard</Link>
+                  <Link href="/dashboard">{t('nav.dashboard')}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/settings" className="flex items-center">
                     <Settings className="mr-2 h-4 w-4" />
-                    Settings
+                    {t('nav.settings')}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => signOut()}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  Log Out
+                  {t('nav.logOut')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -82,12 +84,12 @@ export function Header() {
             <>
               <Link href="/login">
                 <Button variant="outline" className="border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground bg-transparent">
-                  Sign In
+                  {t('nav.signIn')}
                 </Button>
               </Link>
               <Link href="/signup">
                 <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  Get Started Free
+                  {t('nav.getStarted')}
                 </Button>
               </Link>
             </>
@@ -114,28 +116,28 @@ export function Header() {
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Estimator
+              {t('nav.estimator')}
             </Link>
             <Link
               href="/dashboard"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Dashboard
+              {t('nav.dashboard')}
             </Link>
             <Link
               href="/pricing"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Pricing
+              {t('nav.pricing')}
             </Link>
             <Link
               href="/how-it-works"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary"
               onClick={() => setMobileMenuOpen(false)}
             >
-              How It Works
+              {t('nav.howItWorks')}
             </Link>
             <div className="flex flex-col gap-2 pt-4">
               {session ? (
@@ -144,21 +146,27 @@ export function Header() {
                     <p className="text-sm font-medium">{session.user?.name}</p>
                     <p className="text-xs text-muted-foreground">{session.user?.email}</p>
                   </div>
+                  <Link href="/settings" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full">
+                      <Settings className="mr-2 h-4 w-4" />
+                      {t('nav.settings')}
+                    </Button>
+                  </Link>
                   <Button variant="outline" className="w-full" onClick={() => signOut()}>
                     <LogOut className="mr-2 h-4 w-4" />
-                    Log Out
+                    {t('nav.logOut')}
                   </Button>
                 </>
               ) : (
                 <>
                   <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="outline" className="w-full border-secondary text-secondary bg-transparent">
-                      Sign In
+                      {t('nav.signIn')}
                     </Button>
                   </Link>
                   <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
                     <Button className="w-full bg-primary text-primary-foreground">
-                      Get Started Free
+                      {t('nav.getStarted')}
                     </Button>
                   </Link>
                 </>

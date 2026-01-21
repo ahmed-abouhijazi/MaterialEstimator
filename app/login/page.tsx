@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { signIn } from "next-auth/react"
+import { useLocale } from "@/lib/locale-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,6 +13,7 @@ import { Calculator, Mail, Lock, AlertCircle } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
+  const { t } = useLocale()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   
@@ -34,7 +36,7 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
-        setError('Invalid email or password. Please check if you have verified your email.')
+        setError(t('auth.login.error'))
       } else if (result?.ok) {
         // Successful login - redirect to dashboard
         window.location.href = '/dashboard'
@@ -57,15 +59,15 @@ export default function LoginPage() {
               BuildCalc Pro
             </span>
           </Link>
-          <p className="text-muted-foreground">Welcome back! Sign in to your account</p>
+          <p className="text-muted-foreground">{t('auth.login.subtitle')}</p>
         </div>
 
         {/* Login Card */}
         <Card className="border-2 border-border">
           <CardHeader>
-            <CardTitle className="text-2xl text-center">Log In</CardTitle>
+            <CardTitle className="text-2xl text-center">{t('auth.login.title')}</CardTitle>
             <CardDescription className="text-center">
-              Enter your credentials to access your account
+              {t('auth.login.subtitle')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -78,7 +80,7 @@ export default function LoginPage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('auth.login.email')}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -95,7 +97,7 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('auth.login.password')}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -116,15 +118,15 @@ export default function LoginPage() {
                 className="w-full"
                 disabled={isLoading}
               >
-                {isLoading ? "Signing In..." : "Sign In"}
+                {isLoading ? t('auth.login.signingIn') : t('auth.login.signInButton')}
               </Button>
             </form>
 
             <div className="mt-6 text-center text-sm space-y-2">
               <p className="text-muted-foreground">
-                Don't have an account?{" "}
+                {t('auth.login.noAccount')}{" "}
                 <Link href="/signup" className="text-primary hover:underline font-medium">
-                  Sign up
+                  {t('auth.login.signUp')}
                 </Link>
               </p>
             </div>
