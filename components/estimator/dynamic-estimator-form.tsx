@@ -167,14 +167,14 @@ export function DynamicEstimatorForm() {
       </CardHeader>
       <CardContent>
         <Tabs value={formData.estimationMode || 'simple'} onValueChange={(value) => updateField("estimationMode", value as EstimationMode)}>
-          <TabsList className="grid w-full grid-cols-2 h-auto">
-            <TabsTrigger value="simple" className="flex flex-col items-start p-4 h-auto">
+          <TabsList className="grid w-full grid-cols-2 h-auto gap-2 p-1">
+            <TabsTrigger value="simple" className="flex flex-col items-start p-4 h-auto min-h-[100px] text-left whitespace-normal">
               <span className="text-lg font-semibold">{t('estimator.estimationModes.simple')}</span>
-              <span className="text-xs text-muted-foreground mt-1">{t('estimator.estimationModes.simpleDesc')}</span>
+              <span className="text-xs text-muted-foreground mt-1 leading-relaxed">{t('estimator.estimationModes.simpleDesc')}</span>
             </TabsTrigger>
-            <TabsTrigger value="advanced" className="flex flex-col items-start p-4 h-auto">
+            <TabsTrigger value="advanced" className="flex flex-col items-start p-4 h-auto min-h-[100px] text-left whitespace-normal">
               <span className="text-lg font-semibold">{t('estimator.estimationModes.advanced')}</span>
-              <span className="text-xs text-muted-foreground mt-1">{t('estimator.estimationModes.advancedDesc')}</span>
+              <span className="text-xs text-muted-foreground mt-1 leading-relaxed">{t('estimator.estimationModes.advancedDesc')}</span>
             </TabsTrigger>
           </TabsList>
         </Tabs>
