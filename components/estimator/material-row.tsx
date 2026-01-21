@@ -12,6 +12,8 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Sparkles, Info } from "lucide-react"
 import { getAllBrandsForMaterial } from "@/lib/material-brands"
+import { formatCurrency } from "@/lib/currency"
+import { useLocale } from "@/lib/locale-context"
 import type { MaterialItem } from "@/lib/calculations"
 
 interface MaterialRowProps {
@@ -25,6 +27,7 @@ export function MaterialRow({ material, location, onBrandChange, materialIndex }
   const [availableBrands, setAvailableBrands] = useState<any[]>([])
   const [selectedBrand, setSelectedBrand] = useState(material.recommendedBrand || material.selectedBrand || 'standard')
   const [showBrands, setShowBrands] = useState(false)
+  const { currency } = useLocale()
 
   useEffect(() => {
     // Fetch available brands for this material
@@ -116,10 +119,10 @@ export function MaterialRow({ material, location, onBrandChange, materialIndex }
         {material.quantity.toLocaleString()} {material.unit}
       </td>
       <td className="py-3 pr-4 text-right text-muted-foreground">
-        ${material.unitPrice.toFixed(2)}
+        {formatCurrency(material.unitPrice, currency)}
       </td>
       <td className="py-3 text-right font-medium text-secondary">
-        ${material.totalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        {formatCurrency(material.totalPrice, currency)}
       </td>
     </tr>
   )
