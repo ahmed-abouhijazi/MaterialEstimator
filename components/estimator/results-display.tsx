@@ -154,7 +154,7 @@ export function ResultsDisplay() {
 
     setSaving(true)
     try {
-      const currency = getCurrencyForLocation(result.projectDetails.location)
+      const currencyObj = getCurrencyForLocation(result.projectDetails.location)
       
       const response = await fetch('/api/estimates', {
         method: 'POST',
@@ -162,7 +162,7 @@ export function ResultsDisplay() {
         body: JSON.stringify({
           projectName: `${getProjectTypeLabel(result.projectDetails.projectType)} - ${result.projectDetails.location}`,
           location: result.projectDetails.location,
-          currency,
+          currency: currencyObj.code, // Pass only the currency code string
           materials: result.materials,
           pricing: {
             totalCost: result.total,
