@@ -114,6 +114,35 @@ export function ResultsDisplay() {
     window.print()
   }
 
+  const handleExportPDF = async () => {
+    if (!result) return
+
+    try {
+      const response = await fetch('/api/export-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(result)
+      })
+
+      if (response.ok) {
+        const htmlContent = await response.text()
+        const printWindow = window.open('', '_blank')
+        if (printWindow) {
+          printWindow.document.write(htmlContent)
+          printWindow.document.close()
+          setTimeout(() => {
+            printWindow.print()
+          }, 250)
+        }
+      } else {
+        throw new Error('Failed to generate PDF')
+      }
+    } catch (error) {
+      console.error('Error exporting PDF:', error)
+      alert('Failed to export PDF. Please try again.')
+    }
+  }
+
   const handleSave = async () => {
     if (!result) return
 
@@ -335,6 +364,10 @@ Get your own estimate at: buildcalc.pro`
           <Button variant="outline" onClick={handlePrint} className="border-2 border-secondary text-secondary bg-transparent">
             <Printer className="mr-2 h-4 w-4" />
             {t('estimator.results.printPDF')}
+          </Button>
+          <Button variant="outline" onClick={handleExportPDF} className="border-2 border-primary text-primary bg-transparent hover:bg-primary hover:text-primary-foreground">
+            <Download className="mr-2 h-4 w-4" />
+            {t('estimator.results.exportPDF')}
           </Button>
           <Button variant="outline" onClick={handleShare} className="border-2 border-secondary text-secondary bg-transparent">
             {shareSuccess ? (

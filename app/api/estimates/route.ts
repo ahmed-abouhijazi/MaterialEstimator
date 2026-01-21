@@ -24,7 +24,13 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' }
     })
 
-    return NextResponse.json({ estimates })
+    // Parse materials JSON for each estimate
+    const parsedEstimates = estimates.map(estimate => ({
+      ...estimate,
+      materials: typeof estimate.materials === 'string' ? JSON.parse(estimate.materials) : estimate.materials
+    }))
+
+    return NextResponse.json({ estimates: parsedEstimates })
   } catch (error) {
     console.error('Error fetching estimates:', error)
     return NextResponse.json({ error: 'Failed to fetch estimates' }, { status: 500 })
@@ -66,7 +72,7 @@ export async function POST(request: NextRequest) {
         projectName,
         location,
         currency,
-        materials,
+        materials: JSON.stringify(materials),
         totalCost: pricing.totalCost,
         materialCost: pricing.materialCost,
         laborCost: pricing.laborCost,
