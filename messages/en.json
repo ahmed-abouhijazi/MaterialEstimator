@@ -137,8 +137,39 @@
     "step3Description": "Help us provide accurate local pricing",
     "selectRegion": "Select region",
     "qualityLevel": "Quality Level",
+    "estimationMode": "Estimation Mode",
     "calculate": "Calculate Estimate",
     "calculating": "Calculating...",
+    "projectTypes": {
+      "house": "Full House",
+      "houseDesc": "Complete residential construction",
+      "room": "Single Room",
+      "roomDesc": "Adding a new room",
+      "wall": "Wall",
+      "wallDesc": "Wall construction or fence",
+      "roof": "Roof/Roofing",
+      "roofDesc": "New roof or re-roofing",
+      "extension": "Extension",
+      "extensionDesc": "Home extension project",
+      "foundation": "Foundation",
+      "foundationDesc": "Foundation/slab work",
+      "renovation": "Renovation",
+      "renovationDesc": "Interior renovation"
+    },
+    "qualityLevels": {
+      "basic": "Basic",
+      "basicDesc": "Economy materials, functional",
+      "standard": "Standard",
+      "standardDesc": "Recommended for most projects",
+      "premium": "Premium",
+      "premiumDesc": "High-end materials"
+    },
+    "estimationModes": {
+      "simple": "Simple",
+      "simpleDesc": "Essential materials only - quick estimate",
+      "advanced": "Advanced",
+      "advancedDesc": "Complete materials including electrical components, plumbing fixtures, formwork, waterproofing, and finishing details"
+    },
     "results": {
       "title": "Estimate Results",
       "summary": "Cost Summary",

@@ -12,6 +12,8 @@ export type ProjectType =
 
 export type QualityLevel = "basic" | "standard" | "premium"
 
+export type EstimationMode = "simple" | "advanced"
+
 export interface ProjectInput {
   projectType: ProjectType
   length: number // in meters
@@ -19,6 +21,7 @@ export interface ProjectInput {
   height: number // in meters
   location: string
   qualityLevel: QualityLevel
+  estimationMode?: EstimationMode
 }
 
 export interface MaterialItem {
@@ -63,6 +66,22 @@ const basePrices: Record<string, Record<QualityLevel, number>> = {
   drywall: { basic: 10, standard: 15, premium: 22 },
   windows: { basic: 150, standard: 250, premium: 450 },
   doors: { basic: 200, standard: 350, premium: 600 },
+  // Advanced materials
+  electricalPanel: { basic: 150, standard: 250, premium: 400 },
+  breakers: { basic: 15, standard: 25, premium: 45 },
+  outlets: { basic: 3, standard: 5, premium: 10 },
+  switches: { basic: 2, standard: 4, premium: 8 },
+  waterHeater: { basic: 300, standard: 500, premium: 900 },
+  toilets: { basic: 150, standard: 300, premium: 600 },
+  sinks: { basic: 80, standard: 150, premium: 350 },
+  showerSet: { basic: 100, standard: 200, premium: 500 },
+  valves: { basic: 8, standard: 15, premium: 30 },
+  tileAdhesive: { basic: 12, standard: 18, premium: 28 },
+  grout: { basic: 8, standard: 12, premium: 20 },
+  plaster: { basic: 15, standard: 22, premium: 35 },
+  formwork: { basic: 20, standard: 30, premium: 45 },
+  waterproofing: { basic: 25, standard: 40, premium: 65 },
+  labor: { basic: 15, standard: 25, premium: 40 }, // per hour estimate
 }
 
 // Waste buffer percentages based on project type
@@ -101,7 +120,7 @@ function calculateConcreteVolume(area: number, thickness: number): number {
 
 export function calculateMaterials(input: ProjectInput): EstimateResult {
   const materials: MaterialItem[] = []
-  const { projectType, length, width, height, qualityLevel } = input
+  const { projectType, length, width, height, qualityLevel, estimationMode = 'simple' } = input
 
   const floorArea = calculateFloorArea(length, width)
   const wallArea = calculateWallArea(length, width, height)
@@ -110,15 +129,20 @@ export function calculateMaterials(input: ProjectInput): EstimateResult {
   // Calculate materials based on project type
   switch (projectType) {
     case "house":
-      // Foundation (slab 0.15m thick)
+      // Foundation (slab 0.15m thick) - FIXED: More realistic cement calculation
       const foundationVolume = calculateConcreteVolume(floorArea, 0.15)
       const cementBagsFoundation = Math.ceil(foundationVolume * 6.5) // ~6.5 bags per m³
+      
+      // FIXED: Add cement for columns and footings (review mentioned 130-160 bags)
+      const additionalStructuralCement = Math.ceil(floorArea * 0.8) // Extra for columns/footings
+      const totalCementBags = cementBagsFoundation + additionalStructuralCement
+      
       materials.push({
         name: "Cement (50kg bags)",
-        quantity: cementBagsFoundation,
+        quantity: totalCementBags,
         unit: "bags",
         unitPrice: basePrices.cement[qualityLevel],
-        totalPrice: cementBagsFoundation * basePrices.cement[qualityLevel],
+        totalPrice: totalCementBags * basePrices.cement[qualityLevel],
         category: "Foundation",
       })
 
@@ -144,8 +168,8 @@ export function calculateMaterials(input: ProjectInput): EstimateResult {
         category: "Foundation",
       })
 
-      // Steel reinforcement
-      const steel = Math.ceil(floorArea * 0.035) // tons (~35kg per m²)
+      // Steel reinforcement - FIXED: Reduced from 35kg to 25-30kg per m² (review: 2.5-3.5 tons for 100m²)
+      const steel = Math.ceil(floorArea * 0.028 * 10) / 10 // ~28kg per m² = 2.8 tons for 100m²
       materials.push({
         name: "Steel Reinforcement",
         quantity: steel,
@@ -199,8 +223,8 @@ export function calculateMaterials(input: ProjectInput): EstimateResult {
         category: "Roofing",
       })
 
-      // Wood for roof structure
-      const woodRoof = Math.ceil(roofArea * 0.015 * 1000) // linear meters
+      // Wood for roof structure - FIXED: Reduced from 0.015 to realistic 0.005-0.007 (review: 400-700lm for 100m²)
+      const woodRoof = Math.ceil(roofArea * 0.006 * 1000) // linear meters (~600lm for 100m²)
       materials.push({
         name: "Timber (roof structure)",
         quantity: woodRoof,
@@ -209,6 +233,30 @@ export function calculateMaterials(input: ProjectInput): EstimateResult {
         totalPrice: woodRoof * basePrices.wood[qualityLevel],
         category: "Roofing",
       })
+
+      // Advanced mode additions
+      if (estimationMode === 'advanced') {
+        // Formwork for foundation
+        const formworkArea = Math.ceil((2 * (length + width) * 0.15) + (floorArea * 0.1)) // perimeter + some horizontal
+        materials.push({
+          name: "Formwork (rental/materials)",
+          quantity: formworkArea,
+          unit: "m²",
+          unitPrice: basePrices.formwork[qualityLevel],
+          totalPrice: formworkArea * basePrices.formwork[qualityLevel],
+          category: "Foundation",
+        })
+
+        // Waterproofing
+        materials.push({
+          name: "Waterproofing Membrane",
+          quantity: Math.ceil(floorArea * 1.1),
+          unit: "m²",
+          unitPrice: basePrices.waterproofing[qualityLevel],
+          totalPrice: Math.ceil(floorArea * 1.1) * basePrices.waterproofing[qualityLevel],
+          category: "Foundation",
+        })
+      }
 
       // Electrical wiring
       const wiring = Math.ceil(floorArea * 5) // meters of wire
@@ -221,6 +269,48 @@ export function calculateMaterials(input: ProjectInput): EstimateResult {
         category: "Electrical",
       })
 
+      // Advanced electrical components
+      if (estimationMode === 'advanced') {
+        materials.push({
+          name: "Electrical Panel",
+          quantity: 1,
+          unit: "unit",
+          unitPrice: basePrices.electricalPanel[qualityLevel],
+          totalPrice: basePrices.electricalPanel[qualityLevel],
+          category: "Electrical",
+        })
+
+        const breakersCount = Math.ceil(floorArea / 20) // ~1 breaker per 20m²
+        materials.push({
+          name: "Circuit Breakers",
+          quantity: breakersCount,
+          unit: "units",
+          unitPrice: basePrices.breakers[qualityLevel],
+          totalPrice: breakersCount * basePrices.breakers[qualityLevel],
+          category: "Electrical",
+        })
+
+        const outletsCount = Math.ceil(floorArea / 10) // ~1 outlet per 10m²
+        materials.push({
+          name: "Power Outlets",
+          quantity: outletsCount,
+          unit: "units",
+          unitPrice: basePrices.outlets[qualityLevel],
+          totalPrice: outletsCount * basePrices.outlets[qualityLevel],
+          category: "Electrical",
+        })
+
+        const switchesCount = Math.ceil(floorArea / 15) + Math.ceil(doorCount) // switches for rooms
+        materials.push({
+          name: "Light Switches",
+          quantity: switchesCount,
+          unit: "units",
+          unitPrice: basePrices.switches[qualityLevel],
+          totalPrice: switchesCount * basePrices.switches[qualityLevel],
+          category: "Electrical",
+        })
+      }
+
       // Plumbing pipes
       const pipes = Math.ceil(floorArea * 1.5) // meters
       materials.push({
@@ -231,6 +321,56 @@ export function calculateMaterials(input: ProjectInput): EstimateResult {
         totalPrice: pipes * basePrices.pipes[qualityLevel],
         category: "Plumbing",
       })
+
+      // Advanced plumbing components
+      if (estimationMode === 'advanced') {
+        const bathroomsCount = Math.max(1, Math.floor(floorArea / 50)) // ~1 bathroom per 50m²
+
+        materials.push({
+          name: "Water Heater",
+          quantity: bathroomsCount,
+          unit: "units",
+          unitPrice: basePrices.waterHeater[qualityLevel],
+          totalPrice: bathroomsCount * basePrices.waterHeater[qualityLevel],
+          category: "Plumbing",
+        })
+
+        materials.push({
+          name: "Toilets",
+          quantity: bathroomsCount,
+          unit: "units",
+          unitPrice: basePrices.toilets[qualityLevel],
+          totalPrice: bathroomsCount * basePrices.toilets[qualityLevel],
+          category: "Plumbing",
+        })
+
+        materials.push({
+          name: "Sinks",
+          quantity: bathroomsCount + 1, // bathroom + kitchen
+          unit: "units",
+          unitPrice: basePrices.sinks[qualityLevel],
+          totalPrice: (bathroomsCount + 1) * basePrices.sinks[qualityLevel],
+          category: "Plumbing",
+        })
+
+        materials.push({
+          name: "Shower Set",
+          quantity: bathroomsCount,
+          unit: "units",
+          unitPrice: basePrices.showerSet[qualityLevel],
+          totalPrice: bathroomsCount * basePrices.showerSet[qualityLevel],
+          category: "Plumbing",
+        })
+
+        materials.push({
+          name: "Valves & Fittings",
+          quantity: Math.ceil(pipes / 10), // ~1 valve per 10m of pipe
+          unit: "units",
+          unitPrice: basePrices.valves[qualityLevel],
+          totalPrice: Math.ceil(pipes / 10) * basePrices.valves[qualityLevel],
+          category: "Plumbing",
+        })
+      }
 
       // Paint (interior + exterior)
       const paintLiters = Math.ceil((wallArea * 2 + floorArea) * 0.15) // liters
@@ -253,6 +393,48 @@ export function calculateMaterials(input: ProjectInput): EstimateResult {
         totalPrice: tiles * basePrices.tiles[qualityLevel],
         category: "Finishing",
       })
+
+      // Advanced finishing
+      if (estimationMode === 'advanced') {
+        const bathroomsCount = Math.max(1, Math.floor(floorArea / 50))
+        const bathroomWallTiles = Math.ceil(bathroomsCount * 20) // ~20m² per bathroom
+
+        materials.push({
+          name: "Bathroom Wall Tiles",
+          quantity: bathroomWallTiles,
+          unit: "m²",
+          unitPrice: basePrices.tiles[qualityLevel],
+          totalPrice: bathroomWallTiles * basePrices.tiles[qualityLevel],
+          category: "Finishing",
+        })
+
+        materials.push({
+          name: "Tile Adhesive",
+          quantity: Math.ceil((tiles + bathroomWallTiles) * 0.05), // ~5kg per m²
+          unit: "bags",
+          unitPrice: basePrices.tileAdhesive[qualityLevel],
+          totalPrice: Math.ceil((tiles + bathroomWallTiles) * 0.05) * basePrices.tileAdhesive[qualityLevel],
+          category: "Finishing",
+        })
+
+        materials.push({
+          name: "Grout",
+          quantity: Math.ceil((tiles + bathroomWallTiles) * 0.02), // ~2kg per m²
+          unit: "bags",
+          unitPrice: basePrices.grout[qualityLevel],
+          totalPrice: Math.ceil((tiles + bathroomWallTiles) * 0.02) * basePrices.grout[qualityLevel],
+          category: "Finishing",
+        })
+
+        materials.push({
+          name: "Ceiling Plaster",
+          quantity: Math.ceil(floorArea * 1.05),
+          unit: "m²",
+          unitPrice: basePrices.plaster[qualityLevel],
+          totalPrice: Math.ceil(floorArea * 1.05) * basePrices.plaster[qualityLevel],
+          category: "Finishing",
+        })
+      }
 
       // Windows (estimate based on wall area)
       const windowCount = Math.ceil(wallArea / 15) // 1 window per 15m² wall

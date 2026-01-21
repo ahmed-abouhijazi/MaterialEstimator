@@ -15,6 +15,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Set default estimation mode if not provided
+    if (!body.estimationMode) {
+      body.estimationMode = 'simple'
+    }
+
     // Basic calculation
     let result = calculateMaterials(body)
 

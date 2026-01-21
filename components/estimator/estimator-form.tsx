@@ -11,23 +11,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calculator, ArrowRight, AlertCircle } from "lucide-react"
-import { calculateMaterials, type ProjectInput, type ProjectType, type QualityLevel, type EstimateResult } from "@/lib/calculations"
-
-const projectTypes: { value: ProjectType; label: string; description: string }[] = [
-  { value: "house", label: "Full House", description: "Complete residential construction" },
-  { value: "room", label: "Single Room", description: "Adding a new room" },
-  { value: "wall", label: "Wall", description: "Wall construction or fence" },
-  { value: "roof", label: "Roof/Roofing", description: "New roof or re-roofing" },
-  { value: "extension", label: "Extension", description: "Home extension project" },
-  { value: "foundation", label: "Foundation", description: "Foundation/slab work" },
-  { value: "renovation", label: "Renovation", description: "Interior renovation" },
-]
-
-const qualityLevels: { value: QualityLevel; label: string; description: string }[] = [
-  { value: "basic", label: "Basic", description: "Economy materials, functional" },
-  { value: "standard", label: "Standard", description: "Recommended for most projects" },
-  { value: "premium", label: "Premium", description: "High-end materials" },
-]
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { calculateMaterials, type ProjectInput, type ProjectType, type QualityLevel, type EstimationMode, type EstimateResult } from "@/lib/calculations"
 
 const locations = [
   "United States - Northeast",
@@ -56,7 +41,25 @@ export function EstimatorForm() {
     height: undefined,
     location: "",
     qualityLevel: "standard",
+    estimationMode: "simple",
   })
+
+  // Dynamic project types with translations
+  const projectTypes: { value: ProjectType; label: string; description: string }[] = [
+    { value: "house", label: t('estimator.projectTypes.house'), description: t('estimator.projectTypes.houseDesc') },
+    { value: "room", label: t('estimator.projectTypes.room'), description: t('estimator.projectTypes.roomDesc') },
+    { value: "wall", label: t('estimator.projectTypes.wall'), description: t('estimator.projectTypes.wallDesc') },
+    { value: "roof", label: t('estimator.projectTypes.roof'), description: t('estimator.projectTypes.roofDesc') },
+    { value: "extension", label: t('estimator.projectTypes.extension'), description: t('estimator.projectTypes.extensionDesc') },
+    { value: "foundation", label: t('estimator.projectTypes.foundation'), description: t('estimator.projectTypes.foundationDesc') },
+    { value: "renovation", label: t('estimator.projectTypes.renovation'), description: t('estimator.projectTypes.renovationDesc') },
+  ]
+
+  const qualityLevels: { value: QualityLevel; label: string; description: string }[] = [
+    { value: "basic", label: t('estimator.qualityLevels.basic'), description: t('estimator.qualityLevels.basicDesc') },
+    { value: "standard", label: t('estimator.qualityLevels.standard'), description: t('estimator.qualityLevels.standardDesc') },
+    { value: "premium", label: t('estimator.qualityLevels.premium'), description: t('estimator.qualityLevels.premiumDesc') },
+  ]
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
@@ -298,6 +301,7 @@ export function EstimatorForm() {
                           ? "border-primary bg-primary/5 font-medium"
                           : "border-border hover:border-primary/50"
                       }`}
+                      title={level.description}
                     >
                       {level.label}
                     </button>
@@ -305,6 +309,37 @@ export function EstimatorForm() {
                 </div>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Estimation Mode */}
+        <Card className="border-2 border-primary/30 bg-primary/5">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
+              {t('estimator.estimationMode')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Tabs
+              value={formData.estimationMode || 'simple'}
+              onValueChange={(value) => updateField("estimationMode", value as EstimationMode)}
+              className="w-full"
+            >
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="simple">{t('estimator.estimationModes.simple')}</TabsTrigger>
+                <TabsTrigger value="advanced">{t('estimator.estimationModes.advanced')}</TabsTrigger>
+              </TabsList>
+              <TabsContent value="simple" className="mt-4">
+                <p className="text-sm text-muted-foreground">
+                  {t('estimator.estimationModes.simpleDesc')}
+                </p>
+              </TabsContent>
+              <TabsContent value="advanced" className="mt-4">
+                <p className="text-sm text-muted-foreground">
+                  {t('estimator.estimationModes.advancedDesc')}
+                </p>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
 
@@ -325,7 +360,7 @@ export function EstimatorForm() {
             {isCalculating ? (
               <>
                 <Calculator className="mr-2 h-5 w-5 animate-pulse" />
-                Calculating...
+                {t('estimator.calculating')}
               </>
             ) : (
               <>
