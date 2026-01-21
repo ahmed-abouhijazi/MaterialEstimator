@@ -2,11 +2,20 @@
 
 import Link from "next/link"
 import { useState } from "react"
+import { useSession, signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
-import { Menu, X, HardHat } from "lucide-react"
+import { Menu, X, HardHat, LogOut, User } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { data: session } = useSession()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b-2 border-secondary bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -37,12 +46,43 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Button variant="outline" className="border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground bg-transparent">
-            Sign In
-          </Button>
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-            Get Started Free
-          </Button>
+          {session ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="border-secondary text-secondary bg-transparent">
+                  <User className="mr-2 h-4 w-4" />
+                  {session.user?.name || 'Account'}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <div className="px-2 py-1.5">
+                  <p className="text-sm font-medium">{session.user?.name}</p>
+                  <p className="text-xs text-muted-foreground">{session.user?.email}</p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard">Dashboard</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => signOut()}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Log Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Link href="/login">
+                <Button variant="outline" className="border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground bg-transparent">
+                  Sign In
+                </Button>
+              </Link>
+              <Link href="/signup">
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  Get Started Free
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -89,12 +129,31 @@ export function Header() {
               How It Works
             </Link>
             <div className="flex flex-col gap-2 pt-4">
-              <Button variant="outline" className="w-full border-secondary text-secondary bg-transparent">
-                Sign In
-              </Button>
-              <Button className="w-full bg-primary text-primary-foreground">
-                Get Started Free
-              </Button>
+              {session ? (
+                <>
+                  <div className="px-2 py-1.5 border rounded-md">
+                    <p className="text-sm font-medium">{session.user?.name}</p>
+                    <p className="text-xs text-muted-foreground">{session.user?.email}</p>
+                  </div>
+                  <Button variant="outline" className="w-full" onClick={() => signOut()}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Log Out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full border-secondary text-secondary bg-transparent">
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
+                    <Button className="w-full bg-primary text-primary-foreground">
+                      Get Started Free
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
         </div>

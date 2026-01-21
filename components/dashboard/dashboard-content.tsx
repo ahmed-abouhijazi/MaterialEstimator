@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useSession, signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { 
@@ -13,107 +14,78 @@ import {
   MoreVertical,
   Trash2,
   Eye,
-  Download
+  Download,
+  LogOut,
+  User as UserIcon
 } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { type EstimateResult, getProjectTypeLabel } from "@/lib/calculations"
+import { formatCurrency } from "@/lib/currency"
 
-// Demo projects for showcase (in a real app, these would come from a database)
-const demoProjects: EstimateResult[] = [
-  {
-    projectId: "BC-DEMO-001",
-    projectDetails: {
-      projectType: "house",
-      length: 12,
-      width: 10,
-      height: 3,
-      location: "United States - Southwest",
-      qualityLevel: "standard",
-    },
-    materials: [],
-    subtotal: 45250,
-    wasteBuffer: 5430,
-    wasteBufferPercentage: 12,
-    total: 50680,
-    generatedAt: new Date("2026-01-15"),
-  },
-  {
-    projectId: "BC-DEMO-002",
-    projectDetails: {
-      projectType: "room",
-      length: 5,
-      width: 4,
-      height: 2.8,
-      location: "United States - Northeast",
-      qualityLevel: "premium",
-    },
-    materials: [],
-    subtotal: 8500,
-    wasteBuffer: 850,
-    wasteBufferPercentage: 10,
-    total: 9350,
-    generatedAt: new Date("2026-01-18"),
-  },
-  {
-    projectId: "BC-DEMO-003",
-    projectDetails: {
-      projectType: "renovation",
-      length: 8,
-      width: 6,
-      height: 2.5,
-      location: "Canada",
-      qualityLevel: "standard",
-    },
-    materials: [],
-    subtotal: 12800,
-    wasteBuffer: 1920,
-    wasteBufferPercentage: 15,
-    total: 14720,
-    generatedAt: new Date("2026-01-20"),
-  },
-]
+interface Estimate {
+  id: string
+  projectName: string
+  location: string
+  currency: string
+  totalCost: number
+  materialCost: number
+  laborCost: number
+  createdAt: string
+}
 
 export function DashboardContent() {
-  const [projects, setProjects] = useState<EstimateResult[]>([])
+  const { data: session, status } = useSession()
+  const [estimates, setEstimates] = useState<Estimate[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    // Load saved projects from localStorage
-    const savedProjects = localStorage.getItem("buildcalc_projects")
-    if (savedProjects) {
-      try {
-        const parsed = JSON.parse(savedProjects)
-        setProjects(parsed.map((p: EstimateResult) => ({
-          ...p,
-          generatedAt: new Date(p.generatedAt),
-        })))
-      } catch (e) {
-        console.error("Failed to load projects:", e)
-        setProjects(demoProjects)
-      }
-    } else {
-      // Use demo projects for first-time users
-      setProjects(demoProjects)
+    if (status === 'authenticated') {
+      fetchEstimates()
+    } else if (status === 'unauthenticated') {
+      setIsLoaded(true)
     }
-    setIsLoaded(true)
-  }, [])
+  }, [status])
 
-  const deleteProject = (projectId: string) => {
-    const updated = projects.filter((p) => p.projectId !== projectId)
-    setProjects(updated)
-    localStorage.setItem("buildcalc_projects", JSON.stringify(updated))
+  const fetchEstimates = async () => {
+    try {
+      const response = await fetch('/api/estimates')
+      if (response.ok) {
+        const data = await response.json()
+        setEstimates(data.estimates || [])
+      }
+    } catch (error) {
+      console.error('Failed to fetch estimates:', error)
+    } finally {
+      setIsLoaded(true)
+    }
+  }
+
+  const deleteEstimate = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this estimate?')) return
+
+    try {
+      const response = await fetch(`/api/estimates?id=${id}`, {
+        method: 'DELETE',
+      })
+      
+      if (response.ok) {
+        setEstimates(estimates.filter(e => e.id !== id))
+      }
+    } catch (error) {
+      console.error('Failed to delete estimate:', error)
+    }
   }
 
   const stats = {
-    totalProjects: projects.length,
-    totalValue: projects.reduce((sum, p) => sum + p.total, 0),
-    avgProjectCost: projects.length > 0 
-      ? projects.reduce((sum, p) => sum + p.total, 0) / projects.length 
+    totalProjects: estimates.length,
+    totalValue: estimates.reduce((sum, e) => sum + e.totalCost, 0),
+    avgProjectCost: estimates.length > 0 
+      ? estimates.reduce((sum, e) => sum + e.totalCost, 0) / estimates.length 
       : 0,
   }
 
@@ -122,8 +94,32 @@ export function DashboardContent() {
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="text-center">
           <FolderOpen className="mx-auto h-12 w-12 animate-pulse text-primary" />
-          <p className="mt-4 text-muted-foreground">Loading your projects...</p>
+          <p className="mt-4 text-muted-foreground">Loading your dashboard...</p>
         </div>
+      </div>
+    )
+  }
+
+  if (!session) {
+    return (
+      <div className="mx-auto max-w-2xl text-center">
+        <Card className="border-2 border-border">
+          <CardContent className="py-12">
+            <UserIcon className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Welcome to BuildCalc Pro</h2>
+            <p className="text-muted-foreground mb-6">
+              Sign in to save your estimates and access them from anywhere
+            </p>
+            <div className="flex gap-4 justify-center">
+              <Link href="/login">
+                <Button>Log In</Button>
+              </Link>
+              <Link href="/signup">
+                <Button variant="outline">Sign Up</Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -134,18 +130,38 @@ export function DashboardContent() {
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-secondary md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Dashboard
+            Welcome back, {session.user?.name || 'User'}!
           </h1>
           <p className="text-muted-foreground">
             Manage and track all your construction estimates
           </p>
         </div>
-        <Link href="/estimator">
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-            <Plus className="mr-2 h-4 w-4" />
-            New Estimate
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/estimator">
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Plus className="mr-2 h-4 w-4" />
+              New Estimate
+            </Button>
+          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon">
+                <UserIcon className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <div className="px-2 py-1.5">
+                <p className="text-sm font-medium">{session.user?.name}</p>
+                <p className="text-xs text-muted-foreground">{session.user?.email}</p>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => signOut()}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Log Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {/* Stats */}
@@ -195,18 +211,18 @@ export function DashboardContent() {
       <Card className="border-2 border-border">
         <CardHeader>
           <CardTitle className="text-lg text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
-            Recent Projects
+            Saved Estimates
           </CardTitle>
           <CardDescription>
-            Your saved estimates and calculations
+            Your saved construction estimates
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {projects.length === 0 ? (
+          {estimates.length === 0 ? (
             <div className="py-12 text-center">
               <FolderOpen className="mx-auto h-12 w-12 text-muted-foreground/50" />
               <h3 className="mt-4 font-semibold text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
-                No projects yet
+                No estimates yet
               </h3>
               <p className="mt-1 text-sm text-muted-foreground">
                 Create your first estimate to see it here
@@ -220,9 +236,9 @@ export function DashboardContent() {
             </div>
           ) : (
             <div className="space-y-4">
-              {projects.map((project) => (
+              {estimates.map((estimate) => (
                 <div
-                  key={project.projectId}
+                  key={estimate.id}
                   className="flex flex-col gap-4 rounded-lg border-2 border-border p-4 transition-colors hover:border-primary/50 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="flex items-start gap-4">
@@ -231,16 +247,14 @@ export function DashboardContent() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
-                        {getProjectTypeLabel(project.projectDetails.projectType)}
+                        {estimate.projectName}
                       </h3>
                       <p className="text-sm text-muted-foreground">
-                        {project.projectDetails.length}m x {project.projectDetails.width}m | {project.projectDetails.location}
+                        {estimate.location}
                       </p>
                       <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3" />
-                        {project.generatedAt.toLocaleDateString()}
-                        <span className="text-muted-foreground/50">|</span>
-                        <span className="font-mono">{project.projectId}</span>
+                        {new Date(estimate.createdAt).toLocaleDateString()}
                       </div>
                     </div>
                   </div>
@@ -248,7 +262,7 @@ export function DashboardContent() {
                     <div className="text-right">
                       <p className="text-sm text-muted-foreground">Total Cost</p>
                       <p className="text-lg font-bold text-primary" style={{ fontFamily: 'var(--font-display)' }}>
-                        ${project.total.toLocaleString()}
+                        {formatCurrency(estimate.totalCost, estimate.currency)}
                       </p>
                     </div>
                     <DropdownMenu>
@@ -259,17 +273,9 @@ export function DashboardContent() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Download className="mr-2 h-4 w-4" />
-                          Download PDF
-                        </DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-destructive focus:text-destructive"
-                          onClick={() => deleteProject(project.projectId)}
+                          onClick={() => deleteEstimate(estimate.id)}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete

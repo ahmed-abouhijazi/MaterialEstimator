@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { 
@@ -13,16 +15,22 @@ import {
   FileText,
   CheckCircle,
   Printer,
-  Sparkles
+  Sparkles,
+  Save
 } from "lucide-react"
 import { type EstimateResult, type MaterialItem, getProjectTypeLabel, getQualityLabel } from "@/lib/calculations"
 import { MaterialRow } from "./material-row"
+import { getCurrencyForLocation, formatCurrency } from "@/lib/currency"
 
 export function ResultsDisplay() {
   const [result, setResult] = useState<EstimateResult | null>(null)
   const [loading, setLoading] = useState(true)
   const [shareSuccess, setShareSuccess] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
   const printRef = useRef<HTMLDivElement>(null)
+  const { data: session } = useSession()
+  const router = useRouter()
 
   useEffect(() => {
     // Load result from sessionStorage
@@ -78,6 +86,51 @@ export function ResultsDisplay() {
 
   const handlePrint = () => {
     window.print()
+  }
+
+  const handleSave = async () => {
+    if (!result) return
+
+    if (!session) {
+      // Redirect to login if not authenticated
+      router.push('/login?callbackUrl=/estimator/results')
+      return
+    }
+
+    setSaving(true)
+    try {
+      const currency = getCurrencyForLocation(result.projectDetails.location)
+      
+      const response = await fetch('/api/estimates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectName: `${getProjectTypeLabel(result.projectDetails.projectType)} - ${result.projectDetails.location}`,
+          location: result.projectDetails.location,
+          currency,
+          materials: result.materials,
+          pricing: {
+            totalCost: result.total,
+            materialCost: result.subtotal,
+            laborCost: 0, // Add labor calculation if available
+            equipmentCost: 0, // Add equipment calculation if available
+            contingency: result.wasteBuffer
+          }
+        })
+      })
+
+      if (response.ok) {
+        setSaveSuccess(true)
+        setTimeout(() => setSaveSuccess(false), 3000)
+      } else {
+        throw new Error('Failed to save')
+      }
+    } catch (error) {
+      console.error('Error saving estimate:', error)
+      alert('Failed to save estimate. Please try again.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleShare = async () => {
@@ -190,6 +243,23 @@ Get your own estimate at: buildcalc.pro`
           </p>
         </div>
         <div className="flex gap-2 print:hidden">
+          <Button 
+            onClick={handleSave}
+            disabled={saving || saveSuccess}
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            {saveSuccess ? (
+              <>
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Saved!
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                {saving ? 'Saving...' : (session ? 'Save to Dashboard' : 'Sign in to Save')}
+              </>
+            )}
+          </Button>
           <Button variant="outline" onClick={handlePrint} className="border-2 border-secondary text-secondary bg-transparent">
             <Printer className="mr-2 h-4 w-4" />
             Print PDF
