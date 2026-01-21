@@ -12,9 +12,11 @@ import {
   AlertTriangle,
   FileText,
   CheckCircle,
-  Printer
+  Printer,
+  Sparkles
 } from "lucide-react"
-import { type EstimateResult, getProjectTypeLabel, getQualityLabel } from "@/lib/calculations"
+import { type EstimateResult, type MaterialItem, getProjectTypeLabel, getQualityLabel } from "@/lib/calculations"
+import { MaterialRow } from "./material-row"
 
 export function ResultsDisplay() {
   const [result, setResult] = useState<EstimateResult | null>(null)
@@ -37,6 +39,42 @@ export function ResultsDisplay() {
     }
     setLoading(false)
   }, [])
+
+  const handleBrandChange = (materialIndex: number, newBrand: string, newMultiplier: number) => {
+    if (!result) return
+
+    const updatedMaterials = [...result.materials]
+    const material = updatedMaterials[materialIndex]
+    
+    // Calculate new price based on brand multiplier
+    const basePrice = material.unitPrice / (material.brandMultiplier || 1.0)
+    const newUnitPrice = basePrice * newMultiplier
+    const newTotalPrice = newUnitPrice * material.quantity
+
+    updatedMaterials[materialIndex] = {
+      ...material,
+      selectedBrand: newBrand,
+      brandMultiplier: newMultiplier,
+      unitPrice: Math.round(newUnitPrice * 100) / 100,
+      totalPrice: Math.round(newTotalPrice * 100) / 100
+    }
+
+    // Recalculate totals
+    const subtotal = updatedMaterials.reduce((sum, item) => sum + item.totalPrice, 0)
+    const wasteBuffer = subtotal * (result.wasteBufferPercentage / 100)
+    const total = subtotal + wasteBuffer
+
+    const updatedResult = {
+      ...result,
+      materials: updatedMaterials,
+      subtotal: Math.round(subtotal * 100) / 100,
+      wasteBuffer: Math.round(wasteBuffer * 100) / 100,
+      total: Math.round(total * 100) / 100
+    }
+
+    setResult(updatedResult)
+    sessionStorage.setItem("lastEstimate", JSON.stringify(updatedResult))
+  }
 
   const handlePrint = () => {
     window.print()
@@ -240,9 +278,15 @@ Get your own estimate at: buildcalc.pro`
       {/* Materials List */}
       <Card className="border-2 border-border">
         <CardHeader>
-          <CardTitle className="text-lg text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
-            Material List ({result.materials.length} items)
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
+              Material List ({result.materials.length} items)
+            </CardTitle>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span>Click materials to view brand options</span>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {groupedMaterials && Object.entries(groupedMaterials).map(([category, materials]) => (
@@ -261,22 +305,18 @@ Get your own estimate at: buildcalc.pro`
                     </tr>
                   </thead>
                   <tbody>
-                    {materials.map((item, idx) => (
-                      <tr key={idx} className="border-b border-border/50 last:border-0">
-                        <td className="py-3 pr-4 font-medium text-secondary">
-                          {item.name}
-                        </td>
-                        <td className="py-3 pr-4 text-right">
-                          {item.quantity.toLocaleString()} {item.unit}
-                        </td>
-                        <td className="py-3 pr-4 text-right text-muted-foreground">
-                          ${item.unitPrice.toFixed(2)}
-                        </td>
-                        <td className="py-3 text-right font-medium text-secondary">
-                          ${item.totalPrice.toLocaleString()}
-                        </td>
-                      </tr>
-                    ))}
+                    {materials.map((item, idx) => {
+                      const globalIndex = result.materials.indexOf(item)
+                      return (
+                        <MaterialRow
+                          key={idx}
+                          material={item}
+                          location={result.projectDetails.location}
+                          onBrandChange={handleBrandChange}
+                          materialIndex={globalIndex}
+                        />
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>

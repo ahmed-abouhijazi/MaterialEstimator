@@ -37,6 +37,8 @@ const locations = [
   "Canada",
   "United Kingdom",
   "Australia",
+  "France",
+  "Morocco",
   "Other",
 ]
 

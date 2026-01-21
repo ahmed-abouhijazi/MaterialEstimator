@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { calculateMaterials, type ProjectInput } from '@/lib/calculations'
 import { adjustPricesWithAI } from '@/lib/ai-pricing'
+import { getBrandRecommendations, getMaterialCategory } from '@/lib/material-brands'
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,6 +17,23 @@ export async function POST(request: NextRequest) {
 
     // Basic calculation
     let result = calculateMaterials(body)
+
+    // Add brand recommendations to each material
+    result.materials = result.materials.map(material => {
+      const category = getMaterialCategory(material.name)
+      const brands = getBrandRecommendations(category, body.location, body.qualityLevel)
+      
+      if (brands.length > 0) {
+        const topBrand = brands[0]
+        return {
+          ...material,
+          recommendedBrand: topBrand.name,
+          brandMultiplier: topBrand.priceMultiplier
+        }
+      }
+      
+      return material
+    })
 
     // Apply AI-powered price adjustments based on location
     try {

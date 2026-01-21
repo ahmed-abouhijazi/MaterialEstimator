@@ -10,6 +10,8 @@ const locationMultipliers: Record<string, number> = {
   "Canada": 1.20,
   "United Kingdom": 1.30,
   "Australia": 1.15,
+  "France": 1.28,
+  "Morocco": 0.75,
   "Other": 1.00,
 }
 

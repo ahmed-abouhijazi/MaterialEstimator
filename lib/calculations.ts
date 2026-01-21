@@ -28,6 +28,9 @@ export interface MaterialItem {
   unitPrice: number
   totalPrice: number
   category: string
+  recommendedBrand?: string
+  selectedBrand?: string
+  brandMultiplier?: number
 }
 
 export interface EstimateResult {
