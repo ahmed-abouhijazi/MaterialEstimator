@@ -27,6 +27,11 @@ model User {
   subscriptionStatus String @default("none") // none, active, cancelled
   subscriptionEndDate DateTime?
   
+  // User preferences
+  preferredLanguage String @default("en") // en, fr
+  preferredCurrency String @default("USD") // USD, EUR, MAD, GBP, CAD, AUD
+  preferredCountry  String @default("US") // US, FR, MA, etc.
+  
   estimates     Estimate[]
   sessions      Session[]
   accounts      Account[]

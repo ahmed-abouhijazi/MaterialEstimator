@@ -1,0 +1,138 @@
+{
+  "nav": {
+    "estimator": "Estimator",
+    "dashboard": "Dashboard",
+    "pricing": "Pricing",
+    "howItWorks": "How It Works",
+    "signIn": "Sign In",
+    "getStarted": "Get Started Free",
+    "account": "Account",
+    "logOut": "Log Out",
+    "settings": "Settings"
+  },
+  "hero": {
+    "title": "AI-Powered Construction Material Estimator",
+    "subtitle": "Get accurate material estimates in seconds. Know exactly what you need and how much it costs.",
+    "cta": "Start Estimating Now",
+    "learnMore": "Learn More"
+  },
+  "auth": {
+    "login": {
+      "title": "Log In",
+      "subtitle": "Welcome back! Sign in to your account",
+      "email": "Email",
+      "password": "Password",
+      "signInButton": "Sign In",
+      "signingIn": "Signing In...",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up",
+      "error": "Invalid email or password. Please check if you have verified your email."
+    },
+    "signup": {
+      "title": "Create Account",
+      "subtitle": "Join thousands of contractors using BuildCalc Pro",
+      "name": "Full Name",
+      "email": "Email",
+      "password": "Password",
+      "createButton": "Create Account",
+      "creating": "Creating Account...",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "success": "Account created! Please check your email to verify your account.",
+      "error": "An error occurred during signup."
+    },
+    "verifyEmail": {
+      "verifying": "Verifying your email...",
+      "success": "Email Verified Successfully!",
+      "successMessage": "Your email has been verified. You can now sign in to your account.",
+      "error": "Verification Failed",
+      "errorMessage": "The verification link is invalid or has expired.",
+      "goToLogin": "Go to Login",
+      "tryAgain": "Try Again"
+    }
+  },
+  "dashboard": {
+    "title": "My Dashboard",
+    "welcome": "Welcome back",
+    "stats": {
+      "projects": "Total Projects",
+      "value": "Total Value",
+      "average": "Avg. Project Cost"
+    },
+    "recent": "Recent Estimates",
+    "newEstimate": "New Estimate",
+    "viewAll": "View All Projects",
+    "empty": {
+      "title": "No estimates yet",
+      "description": "Start creating your first material estimate",
+      "cta": "Create Estimate"
+    },
+    "actions": {
+      "view": "View",
+      "delete": "Delete",
+      "download": "Download"
+    }
+  },
+  "estimator": {
+    "title": "Material Estimator",
+    "projectName": "Project Name",
+    "projectType": "Project Type",
+    "location": "Location",
+    "dimensions": "Dimensions",
+    "length": "Length",
+    "width": "Width",
+    "height": "Height",
+    "area": "Area",
+    "calculate": "Calculate Estimate",
+    "calculating": "Calculating...",
+    "results": {
+      "title": "Estimate Results",
+      "summary": "Cost Summary",
+      "materials": "Material Cost",
+      "labor": "Labor Cost",
+      "equipment": "Equipment",
+      "contingency": "Contingency",
+      "total": "Total Cost",
+      "save": "Save to Dashboard",
+      "print": "Print",
+      "share": "Share"
+    }
+  },
+  "settings": {
+    "title": "Account Settings",
+    "profile": "Profile Information",
+    "preferences": "Preferences",
+    "language": "Language",
+    "currency": "Preferred Currency",
+    "country": "Country",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "success": "Settings saved successfully!",
+    "error": "Failed to save settings"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "confirm": "Confirm",
+    "currency": {
+      "usd": "US Dollar (USD)",
+      "eur": "Euro (EUR)",
+      "mad": "Moroccan Dirham (MAD)",
+      "gbp": "British Pound (GBP)",
+      "cad": "Canadian Dollar (CAD)",
+      "aud": "Australian Dollar (AUD)"
+    },
+    "countries": {
+      "us": "United States",
+      "fr": "France",
+      "ma": "Morocco",
+      "gb": "United Kingdom",
+      "ca": "Canada",
+      "au": "Australia"
+    }
+  }
+}

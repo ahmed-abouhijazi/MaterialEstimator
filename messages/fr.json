@@ -1,0 +1,138 @@
+{
+  "nav": {
+    "estimator": "Estimateur",
+    "dashboard": "Tableau de bord",
+    "pricing": "Tarification",
+    "howItWorks": "Comment ça marche",
+    "signIn": "Se connecter",
+    "getStarted": "Commencer gratuitement",
+    "account": "Compte",
+    "logOut": "Se déconnecter",
+    "settings": "Paramètres"
+  },
+  "hero": {
+    "title": "Estimateur de Matériaux de Construction Alimenté par l'IA",
+    "subtitle": "Obtenez des estimations de matériaux précises en quelques secondes. Sachez exactement ce dont vous avez besoin et combien cela coûte.",
+    "cta": "Commencer l'estimation",
+    "learnMore": "En savoir plus"
+  },
+  "auth": {
+    "login": {
+      "title": "Se connecter",
+      "subtitle": "Bon retour! Connectez-vous à votre compte",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "signInButton": "Se connecter",
+      "signingIn": "Connexion en cours...",
+      "noAccount": "Vous n'avez pas de compte?",
+      "signUp": "S'inscrire",
+      "error": "E-mail ou mot de passe invalide. Veuillez vérifier si vous avez vérifié votre e-mail."
+    },
+    "signup": {
+      "title": "Créer un compte",
+      "subtitle": "Rejoignez des milliers d'entrepreneurs utilisant BuildCalc Pro",
+      "name": "Nom complet",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "createButton": "Créer un compte",
+      "creating": "Création du compte...",
+      "haveAccount": "Vous avez déjà un compte?",
+      "signIn": "Se connecter",
+      "success": "Compte créé! Veuillez vérifier votre e-mail pour vérifier votre compte.",
+      "error": "Une erreur s'est produite lors de l'inscription."
+    },
+    "verifyEmail": {
+      "verifying": "Vérification de votre e-mail...",
+      "success": "E-mail vérifié avec succès!",
+      "successMessage": "Votre e-mail a été vérifié. Vous pouvez maintenant vous connecter à votre compte.",
+      "error": "Échec de la vérification",
+      "errorMessage": "Le lien de vérification est invalide ou a expiré.",
+      "goToLogin": "Aller à la connexion",
+      "tryAgain": "Réessayer"
+    }
+  },
+  "dashboard": {
+    "title": "Mon tableau de bord",
+    "welcome": "Bon retour",
+    "stats": {
+      "projects": "Projets totaux",
+      "value": "Valeur totale",
+      "average": "Coût moyen du projet"
+    },
+    "recent": "Estimations récentes",
+    "newEstimate": "Nouvelle estimation",
+    "viewAll": "Voir tous les projets",
+    "empty": {
+      "title": "Aucune estimation pour le moment",
+      "description": "Commencez à créer votre première estimation de matériaux",
+      "cta": "Créer une estimation"
+    },
+    "actions": {
+      "view": "Voir",
+      "delete": "Supprimer",
+      "download": "Télécharger"
+    }
+  },
+  "estimator": {
+    "title": "Estimateur de matériaux",
+    "projectName": "Nom du projet",
+    "projectType": "Type de projet",
+    "location": "Emplacement",
+    "dimensions": "Dimensions",
+    "length": "Longueur",
+    "width": "Largeur",
+    "height": "Hauteur",
+    "area": "Surface",
+    "calculate": "Calculer l'estimation",
+    "calculating": "Calcul en cours...",
+    "results": {
+      "title": "Résultats de l'estimation",
+      "summary": "Résumé des coûts",
+      "materials": "Coût des matériaux",
+      "labor": "Coût de la main-d'œuvre",
+      "equipment": "Équipement",
+      "contingency": "Contingence",
+      "total": "Coût total",
+      "save": "Enregistrer dans le tableau de bord",
+      "print": "Imprimer",
+      "share": "Partager"
+    }
+  },
+  "settings": {
+    "title": "Paramètres du compte",
+    "profile": "Informations du profil",
+    "preferences": "Préférences",
+    "language": "Langue",
+    "currency": "Devise préférée",
+    "country": "Pays",
+    "saveChanges": "Enregistrer les modifications",
+    "saving": "Enregistrement...",
+    "success": "Paramètres enregistrés avec succès!",
+    "error": "Échec de l'enregistrement des paramètres"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "currency": {
+      "usd": "Dollar américain (USD)",
+      "eur": "Euro (EUR)",
+      "mad": "Dirham marocain (MAD)",
+      "gbp": "Livre sterling (GBP)",
+      "cad": "Dollar canadien (CAD)",
+      "aud": "Dollar australien (AUD)"
+    },
+    "countries": {
+      "us": "États-Unis",
+      "fr": "France",
+      "ma": "Maroc",
+      "gb": "Royaume-Uni",
+      "ca": "Canada",
+      "au": "Australie"
+    }
+  }
+}
