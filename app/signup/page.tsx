@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { signIn } from "next-auth/react"
+import { useLocale } from "@/lib/locale-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,6 +13,7 @@ import { Calculator, Mail, Lock, AlertCircle, User, CheckCircle } from "lucide-r
 
 export default function SignupPage() {
   const router = useRouter()
+  const { t } = useLocale()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   
