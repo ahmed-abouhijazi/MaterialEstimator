@@ -33,7 +33,7 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
-        setError('Invalid email or password')
+        setError('Invalid email or password. Please check if you have verified your email.')
       } else {
         router.push('/dashboard')
         router.refresh()

@@ -21,6 +21,7 @@ export default function SignupPage() {
     password: "",
     confirmPassword: "",
   })
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,25 +57,41 @@ export default function SignupPage() {
         throw new Error(data.error || 'Failed to create account')
       }
 
-      // Sign in automatically
-      const result = await signIn('credentials', {
-        email: formData.email,
-        password: formData.password,
-        redirect: false,
-      })
-
-      if (result?.error) {
-        setError('Account created but login failed. Please try logging in.')
-        router.push('/login')
-      } else {
-        router.push('/dashboard')
-        router.refresh()
-      }
+      // Show verification message instead of auto-login
+      setShowVerificationMessage(true)
     } catch (err: any) {
       setError(err.message || 'An error occurred')
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (showVerificationMessage) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted px-4 py-12">
+        <div className="w-full max-w-md">
+          <Card className="border-2 border-green-200 bg-green-50">
+            <CardContent className="pt-8 pb-8 text-center">
+              <CheckCircle className="h-16 w-16 mx-auto text-green-600 mb-4" />
+              <h2 className="text-2xl font-bold mb-2 text-green-700">Check Your Email! 📧</h2>
+              <p className="text-muted-foreground mb-4">
+                We've sent a verification link to <strong>{formData.email}</strong>
+              </p>
+              <p className="text-sm text-muted-foreground mb-6">
+                Please click the link in the email to verify your account and start using BuildCalc Pro.
+              </p>
+              <div className="flex gap-2 justify-center">
+                <Link href="/login">
+                  <Button className="bg-primary text-primary-foreground">
+                    Go to Login
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (

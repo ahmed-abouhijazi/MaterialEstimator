@@ -33,6 +33,11 @@ export const authConfig: NextAuthConfig = {
             return null
           }
 
+          // Check if email is verified
+          if (!user.emailVerified) {
+            throw new Error('Please verify your email before logging in')
+          }
+
           const passwordMatch = await bcrypt.compare(password, user.password)
 
           if (!passwordMatch) {

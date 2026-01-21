@@ -28,11 +28,16 @@ export function ResultsDisplay() {
   const [shareSuccess, setShareSuccess] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [accessStatus, setAccessStatus] = useState<any>(null)
+  const [checkingAccess, setCheckingAccess] = useState(true)
   const printRef = useRef<HTMLDivElement>(null)
   const { data: session } = useSession()
   const router = useRouter()
 
   useEffect(() => {
+    // Check access first
+    checkAccess()
+    
     // Load result from sessionStorage
     const stored = sessionStorage.getItem("lastEstimate")
     if (stored) {
@@ -47,6 +52,18 @@ export function ResultsDisplay() {
     }
     setLoading(false)
   }, [])
+
+  const checkAccess = async () => {
+    try {
+      const response = await fetch('/api/check-access')
+      const data = await response.json()
+      setAccessStatus(data)
+    } catch (error) {
+      console.error('Error checking access:', error)
+    } finally {
+      setCheckingAccess(false)
+    }
+  }
 
   const handleBrandChange = (materialIndex: number, newBrand: string, newMultiplier: number) => {
     if (!result) return
@@ -193,13 +210,59 @@ Get your own estimate at: buildcalc.pro`
     return acc
   }, {} as Record<string, typeof result.materials>)
 
-  if (loading) {
+  if (loading || checkingAccess) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="text-center">
           <Calculator className="mx-auto h-12 w-12 animate-pulse text-primary" />
           <p className="mt-4 text-muted-foreground">Loading your estimate...</p>
         </div>
+      </div>
+    )
+  }
+
+  // Check if access is denied
+  if (accessStatus && !accessStatus.canView) {
+    return (
+      <div className="mx-auto max-w-2xl text-center">
+        <Card className="border-2 border-primary bg-primary/5">
+          <CardContent className="py-12">
+            <AlertTriangle className="mx-auto h-16 w-16 text-primary mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Subscription Required 🚀</h2>
+            <p className="text-muted-foreground mb-6">
+              {accessStatus.message || 'You need an active subscription to view estimate results.'}
+            </p>
+            <div className="flex gap-4 justify-center">
+              {!session ? (
+                <>
+                  <Link href="/signup">
+                    <Button className="bg-primary text-primary-foreground">
+                      Sign Up for Free Trial
+                    </Button>
+                  </Link>
+                  <Link href="/login">
+                    <Button variant="outline">
+                      Log In
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/pricing">
+                    <Button className="bg-primary text-primary-foreground">
+                      View Pricing Plans
+                    </Button>
+                  </Link>
+                  <Link href="/dashboard">
+                    <Button variant="outline">
+                      Go to Dashboard
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }

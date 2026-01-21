@@ -48,6 +48,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
+    // Check if user can create estimates
+    const canCreateEstimate = checkUserCanCreateEstimate(user)
+    if (!canCreateEstimate.allowed) {
+      return NextResponse.json({ 
+        error: canCreateEstimate.reason,
+        requiresSubscription: true 
+      }, { status: 403 })
+    }
+
     const body = await request.json()
     const { projectName, location, currency, materials, pricing } = body
 
@@ -66,10 +75,37 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Update user estimate count and trial status
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        estimateCount: user.estimateCount + 1,
+        trialUsed: true
+      }
+    })
+
     return NextResponse.json({ estimate }, { status: 201 })
   } catch (error) {
     console.error('Error creating estimate:', error)
     return NextResponse.json({ error: 'Failed to create estimate' }, { status: 500 })
+  }
+}
+
+function checkUserCanCreateEstimate(user: any): { allowed: boolean; reason?: string } {
+  // Check if user has active subscription
+  if (user.subscriptionStatus === 'active' && user.subscriptionEndDate && new Date(user.subscriptionEndDate) > new Date()) {
+    return { allowed: true }
+  }
+
+  // Check if user hasn't used trial yet
+  if (!user.trialUsed && user.estimateCount === 0) {
+    return { allowed: true }
+  }
+
+  // User needs to subscribe
+  return {
+    allowed: false,
+    reason: 'Your free trial has been used. Please subscribe to create more estimates.'
   }
 }
 

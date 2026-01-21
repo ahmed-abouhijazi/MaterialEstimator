@@ -21,6 +21,12 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   
+  // Trial and subscription
+  trialUsed     Boolean   @default(false)
+  estimateCount Int       @default(0)
+  subscriptionStatus String @default("none") // none, active, cancelled
+  subscriptionEndDate DateTime?
+  
   estimates     Estimate[]
   sessions      Session[]
   accounts      Account[]
