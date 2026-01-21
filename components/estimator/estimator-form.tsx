@@ -158,9 +158,8 @@ export function EstimatorForm() {
               <CardTitle className="text-lg text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
                 {t('estimator.projectType')}
               </CardTitle>
-            </CardTitle>
-            <CardDescription>{t('estimator.projectName')}</CardDescription>
-          </CardHeader>
+              <CardDescription>{t('estimator.projectName')}</CardDescription>
+            </CardHeader>
           <CardContent>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {projectTypes.map((type) => (
