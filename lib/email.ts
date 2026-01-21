@@ -7,7 +7,7 @@ export async function sendVerificationEmail(email: string, token: string) {
 
   try {
     await resend.emails.send({
-      from: 'BuildCalc Pro <onboarding@buildcalcpro.com>',
+      from: 'BuildCalc Pro <onboarding@resend.dev>',
       to: email,
       subject: 'Verify your email - BuildCalc Pro',
       html: `
@@ -67,7 +67,7 @@ export async function sendVerificationEmail(email: string, token: string) {
 export async function sendWelcomeEmail(email: string, name: string) {
   try {
     await resend.emails.send({
-      from: 'BuildCalc Pro <hello@buildcalcpro.com>',
+      from: 'BuildCalc Pro <onboarding@resend.dev>',
       to: email,
       subject: 'Welcome to BuildCalc Pro! 🎊',
       html: `
