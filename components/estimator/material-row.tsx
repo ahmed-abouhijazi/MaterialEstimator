@@ -21,13 +21,16 @@ interface MaterialRowProps {
   location: string
   onBrandChange: (materialIndex: number, newBrand: string, newMultiplier: number) => void
   materialIndex: number
+  translateMaterial?: (name: string) => string
 }
 
-export function MaterialRow({ material, location, onBrandChange, materialIndex }: MaterialRowProps) {
+export function MaterialRow({ material, location, onBrandChange, materialIndex, translateMaterial }: MaterialRowProps) {
   const [availableBrands, setAvailableBrands] = useState<any[]>([])
   const [selectedBrand, setSelectedBrand] = useState(material.recommendedBrand || material.selectedBrand || 'standard')
   const [showBrands, setShowBrands] = useState(false)
   const { currency } = useLocale()
+  
+  const displayName = translateMaterial ? translateMaterial(material.name) : material.name
 
   useEffect(() => {
     // Fetch available brands for this material
@@ -54,7 +57,7 @@ export function MaterialRow({ material, location, onBrandChange, materialIndex }
     <tr className="border-b border-border/50 last:border-0 hover:bg-muted/30">
       <td className="py-3 pr-4">
         <div>
-          <p className="font-medium text-secondary">{material.name}</p>
+          <p className="font-medium text-secondary">{displayName}</p>
           {material.recommendedBrand && (
             <div className="mt-1 flex items-center gap-1">
               <Sparkles className="h-3 w-3 text-primary" />

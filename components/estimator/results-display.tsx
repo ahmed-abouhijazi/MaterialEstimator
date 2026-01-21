@@ -36,6 +36,13 @@ export function ResultsDisplay() {
   const router = useRouter()
   const { t, currency } = useLocale()
 
+  // Material name translation helper
+  const translateMaterial = (name: string) => {
+    const key = `estimator.results.materialNames.${name}`
+    const translated = t(key)
+    return translated === key ? name : translated
+  }
+
   useEffect(() => {
     // Check access first
     checkAccess()
@@ -449,6 +456,7 @@ Get your own estimate at: buildcalc.pro`
                           location={result.projectDetails.location}
                           onBrandChange={handleBrandChange}
                           materialIndex={globalIndex}
+                          translateMaterial={translateMaterial}
                         />
                       )
                     })}
