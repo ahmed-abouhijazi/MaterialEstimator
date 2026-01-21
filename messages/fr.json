@@ -11,10 +11,59 @@
     "settings": "Paramètres"
   },
   "hero": {
-    "title": "Estimateur de Matériaux de Construction Alimenté par l'IA",
-    "subtitle": "Obtenez des estimations de matériaux précises en quelques secondes. Sachez exactement ce dont vous avez besoin et combien cela coûte.",
-    "cta": "Commencer l'estimation",
-    "learnMore": "En savoir plus"
+    "badge": "Votre contremaître numérique",
+    "title": "Sachez exactement quels matériaux vous avez besoin",
+    "subtitle": "Arrêtez de deviner. Obtenez des listes de matériaux précises, des quantités exactes et des estimations de coûts fiables pour vos projets de construction en quelques secondes.",
+    "cta": "Commencer gratuitement",
+    "seeHowItWorks": "Voir comment ça marche",
+    "formulaAccuracy": "Précision basée sur des formules",
+    "pdfExport": "Export PDF",
+    "wasteBuffer": "Tampon de déchets 10-15%",
+    "sampleEstimate": "Exemple d'estimation",
+    "houseSize": "Maison de 120m²",
+    "cementBags": "Sacs de ciment",
+    "steelBars": "Barres d'acier (tonnes)",
+    "estimatedCost": "Coût estimé"
+  },
+  "features": {
+    "badge": "Fonctionnalités",
+    "title": "Tout ce dont vous avez besoin pour estimer correctement",
+    "subtitle": "Conçu pour les professionnels de la construction qui ont besoin de chiffres fiables, pas de technologie sophistiquée.",
+    "feature1Title": "Listes de matériaux exactes",
+    "feature1Desc": "Obtenez des listes détaillées de ciment, sable, acier, bois, câblage, tuyaux et tout ce dont vous avez besoin pour votre projet.",
+    "feature2Title": "Quantités précises",
+    "feature2Desc": "Calculs basés sur des formules, pas de devinettes IA. Nous utilisons des mathématiques de construction éprouvées pour obtenir des chiffres précis.",
+    "feature3Title": "Tampon de déchets inclus",
+    "feature3Desc": "Chaque estimation comprend un tampon de déchets de 10-15% pour ne jamais manquer de matériaux en plein projet.",
+    "feature4Title": "Suggestions de matériaux locaux",
+    "feature4Desc": "Obtenez des recommandations de matériaux en fonction de votre emplacement et des normes de construction locales.",
+    "feature5Title": "Rapports téléchargeables",
+    "feature5Desc": "Exportez vos estimations sous forme de rapports PDF prêts à partager avec les fournisseurs ou les clients.",
+    "feature6Title": "Partage facile",
+    "feature6Desc": "Partagez les estimations via WhatsApp, e-mail ou lien avec votre équipe et les fournisseurs de matériaux."
+  },
+  "testimonials": {
+    "badge": "Témoignages",
+    "title": "Approuvé par des entrepreneurs comme vous",
+    "subtitle": "De vrais constructeurs partagent leur expérience avec BuildCalc Pro.",
+    "testimonial1Name": "Marcus Rodriguez",
+    "testimonial1Role": "Entrepreneur général",
+    "testimonial1Company": "Rodriguez Construction",
+    "testimonial1Content": "Je passais des heures à calculer les matériaux à la main. Maintenant j'obtiens des estimations précises en quelques minutes. M'a évité des erreurs de commande deux fois déjà.",
+    "testimonial2Name": "Sarah Chen",
+    "testimonial2Role": "Chef de projet",
+    "testimonial2Company": "Homestead Renovations",
+    "testimonial2Content": "La fonction de tampon de déchets est une bouée de sauvetage. Plus besoin de courses d'urgence chez le fournisseur au milieu d'un travail. Mes clients adorent les rapports PDF professionnels.",
+    "testimonial3Name": "David Okonkwo",
+    "testimonial3Role": "Constructeur indépendant",
+    "testimonial3Company": "Travailleur autonome",
+    "testimonial3Content": "Enfin, un outil qui parle ma langue. Pas de jargon technique sophistiqué, dites-moi juste ce dont j'ai besoin et combien ça coûte. Ça vaut chaque centime."
+  },
+  "cta": {
+    "title": "Prêt à arrêter de deviner?",
+    "subtitle": "Commencez votre première estimation gratuitement. Aucune carte de crédit requise. Voyez exactement quels matériaux vous avez besoin pour votre prochain projet.",
+    "createEstimate": "Créer une estimation gratuite",
+    "viewPricing": "Voir les tarifs"
   },
   "auth": {
     "login": {

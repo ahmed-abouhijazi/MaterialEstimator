@@ -1,42 +1,47 @@
-import { Star } from "lucide-react"
+"use client"
 
-const testimonials = [
-  {
-    name: "Marcus Rodriguez",
-    role: "General Contractor",
-    company: "Rodriguez Construction",
-    content: "Used to spend hours calculating materials by hand. Now I get accurate estimates in minutes. Saved me from ordering mistakes twice already.",
-    rating: 5,
-  },
-  {
-    name: "Sarah Chen",
-    role: "Project Manager",
-    company: "Homestead Renovations",
-    content: "The waste buffer feature is a lifesaver. No more emergency runs to the supplier in the middle of a job. My clients love the professional PDF reports.",
-    rating: 5,
-  },
-  {
-    name: "David Okonkwo",
-    role: "Independent Builder",
-    company: "Self-employed",
-    content: "Finally, a tool that speaks my language. No fancy tech jargon, just tell me what I need and how much it costs. Worth every penny.",
-    rating: 5,
-  },
-]
+import { Star } from "lucide-react"
+import { useLocale } from "@/lib/locale-context"
 
 export function TestimonialsSection() {
+  const { t } = useLocale()
+
+  const testimonials = [
+    {
+      name: t('testimonials.testimonial1Name'),
+      role: t('testimonials.testimonial1Role'),
+      company: t('testimonials.testimonial1Company'),
+      content: t('testimonials.testimonial1Content'),
+      rating: 5,
+    },
+    {
+      name: t('testimonials.testimonial2Name'),
+      role: t('testimonials.testimonial2Role'),
+      company: t('testimonials.testimonial2Company'),
+      content: t('testimonials.testimonial2Content'),
+      rating: 5,
+    },
+    {
+      name: t('testimonials.testimonial3Name'),
+      role: t('testimonials.testimonial3Role'),
+      company: t('testimonials.testimonial3Company'),
+      content: t('testimonials.testimonial3Content'),
+      rating: 5,
+    },
+  ]
+
   return (
     <section className="bg-muted py-20">
       <div className="container mx-auto px-4">
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <span className="mb-4 inline-block text-sm font-semibold uppercase tracking-wider text-primary" style={{ fontFamily: 'var(--font-display)' }}>
-            Testimonials
+            {t('testimonials.badge')}
           </span>
           <h2 className="mb-4 text-balance text-3xl font-bold text-secondary md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Trusted by Contractors Like You
+            {t('testimonials.title')}
           </h2>
           <p className="text-pretty text-muted-foreground">
-            Real builders sharing their experience with BuildCalc Pro.
+            {t('testimonials.subtitle')}
           </p>
         </div>
 

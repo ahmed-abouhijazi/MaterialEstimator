@@ -11,10 +11,59 @@
     "settings": "Settings"
   },
   "hero": {
-    "title": "AI-Powered Construction Material Estimator",
-    "subtitle": "Get accurate material estimates in seconds. Know exactly what you need and how much it costs.",
-    "cta": "Start Estimating Now",
-    "learnMore": "Learn More"
+    "badge": "Your Digital Foreman",
+    "title": "Know Exactly What Materials You Need",
+    "subtitle": "Stop guessing. Get precise material lists, accurate quantities, and reliable cost estimates for your construction projects in seconds.",
+    "cta": "Start Estimating Free",
+    "seeHowItWorks": "See How It Works",
+    "formulaAccuracy": "Formula-Based Accuracy",
+    "pdfExport": "PDF Export",
+    "wasteBuffer": "10-15% Waste Buffer",
+    "sampleEstimate": "Sample Estimate",
+    "houseSize": "120m² House",
+    "cementBags": "Cement Bags",
+    "steelBars": "Steel Bars (tons)",
+    "estimatedCost": "Estimated Cost"
+  },
+  "features": {
+    "badge": "Features",
+    "title": "Everything You Need to Estimate Right",
+    "subtitle": "Built for construction professionals who need reliable numbers, not fancy tech.",
+    "feature1Title": "Exact Material Lists",
+    "feature1Desc": "Get detailed lists of cement, sand, steel, wood, wiring, pipes, and everything you need for your project.",
+    "feature2Title": "Precise Quantities",
+    "feature2Desc": "Formula-based calculations, not AI guessing. We use proven construction math to get accurate numbers.",
+    "feature3Title": "Waste Buffer Included",
+    "feature3Desc": "Every estimate includes a 10-15% waste buffer so you never run short on materials mid-project.",
+    "feature4Title": "Local Material Suggestions",
+    "feature4Desc": "Get material recommendations based on your location and local building standards.",
+    "feature5Title": "Downloadable Reports",
+    "feature5Desc": "Export your estimates as PDF reports ready to share with suppliers or clients.",
+    "feature6Title": "Easy Sharing",
+    "feature6Desc": "Share estimates via WhatsApp, email, or link with your team and material suppliers."
+  },
+  "testimonials": {
+    "badge": "Testimonials",
+    "title": "Trusted by Contractors Like You",
+    "subtitle": "Real builders sharing their experience with BuildCalc Pro.",
+    "testimonial1Name": "Marcus Rodriguez",
+    "testimonial1Role": "General Contractor",
+    "testimonial1Company": "Rodriguez Construction",
+    "testimonial1Content": "Used to spend hours calculating materials by hand. Now I get accurate estimates in minutes. Saved me from ordering mistakes twice already.",
+    "testimonial2Name": "Sarah Chen",
+    "testimonial2Role": "Project Manager",
+    "testimonial2Company": "Homestead Renovations",
+    "testimonial2Content": "The waste buffer feature is a lifesaver. No more emergency runs to the supplier in the middle of a job. My clients love the professional PDF reports.",
+    "testimonial3Name": "David Okonkwo",
+    "testimonial3Role": "Independent Builder",
+    "testimonial3Company": "Self-employed",
+    "testimonial3Content": "Finally, a tool that speaks my language. No fancy tech jargon, just tell me what I need and how much it costs. Worth every penny."
+  },
+  "cta": {
+    "title": "Ready to Stop Guessing?",
+    "subtitle": "Start your first estimate for free. No credit card required. See exactly what materials you need for your next project.",
+    "createEstimate": "Create Free Estimate",
+    "viewPricing": "View Pricing"
   },
   "auth": {
     "login": {
