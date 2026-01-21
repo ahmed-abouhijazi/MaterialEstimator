@@ -22,13 +22,59 @@ export interface ProjectInput {
   location: string
   qualityLevel: QualityLevel
   estimationMode?: EstimationMode
-  // Advanced mode fields
+  zone?: "urban" | "rural"
+  
+  // Advanced mode fields - General
   numberOfRooms?: number
   numberOfBathrooms?: number
   numberOfFloors?: number
   hasBasement?: boolean
   hasGarage?: boolean
   kitchenSize?: "small" | "medium" | "large"
+  
+  // House specific
+  foundationType?: "slab" | "strip" | "raft" | "piles"
+  structureType?: "concrete" | "steel" | "wood" | "mixed"
+  wallType?: "concrete_blocks" | "bricks" | "wood_frame" | "stone"
+  roofType?: "flat" | "pitched" | "mansard"
+  hasElectricity?: boolean
+  hasPlumbing?: boolean
+  hasFinishing?: boolean
+  
+  // Extension specific
+  connectsToExisting?: boolean
+  needsStructuralReinforcement?: boolean
+  matchExistingFinishes?: boolean
+  
+  // Single room specific
+  roomType?: "bedroom" | "living_room" | "kitchen" | "bathroom"
+  floorCovering?: "tiles" | "wood" | "laminate" | "vinyl" | "carpet"
+  hasFalseCeiling?: boolean
+  electricalPoints?: number
+  
+  // Wall specific
+  wallThickness?: number // in cm
+  wallNeedsFooting?: boolean
+  reinforcement?: "standard" | "reinforced"
+  wallFinish?: "raw" | "plastered" | "painted"
+  
+  // Roof specific
+  roofSlope?: number // in degrees
+  needsLoadBearing?: boolean
+  needsInsulation?: boolean
+  needsWaterproofing?: boolean
+  
+  // Foundation specific
+  foundationDepth?: number // in meters
+  soilType?: "clay" | "sand" | "rock" | "mixed"
+  concreteClass?: "C20" | "C25" | "C30"
+  reinforcementRate?: number // kg per m3
+  
+  // Renovation specific
+  needsDemolition?: boolean
+  replaceElectrical?: boolean
+  replacePlumbing?: boolean
+  renovationLevel?: "light" | "medium" | "complete"
 }
 
 export interface MaterialItem {
