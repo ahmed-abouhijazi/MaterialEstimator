@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useSession, signOut } from "next-auth/react"
+import { useLocale } from "@/lib/locale-context"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { 
@@ -40,6 +41,7 @@ interface Estimate {
 
 export function DashboardContent() {
   const { data: session, status } = useSession()
+  const { t, currency } = useLocale()
   const [estimates, setEstimates] = useState<Estimate[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
 
@@ -94,7 +96,7 @@ export function DashboardContent() {
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="text-center">
           <FolderOpen className="mx-auto h-12 w-12 animate-pulse text-primary" />
-          <p className="mt-4 text-muted-foreground">Loading your dashboard...</p>
+          <p className="mt-4 text-muted-foreground">{t('common.loading')}</p>
         </div>
       </div>
     )
@@ -106,16 +108,16 @@ export function DashboardContent() {
         <Card className="border-2 border-border">
           <CardContent className="py-12">
             <UserIcon className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Welcome to BuildCalc Pro</h2>
+            <h2 className="text-2xl font-bold mb-2">BuildCalc Pro</h2>
             <p className="text-muted-foreground mb-6">
-              Sign in to save your estimates and access them from anywhere
+              {t('dashboard.welcome')}
             </p>
             <div className="flex gap-4 justify-center">
               <Link href="/login">
-                <Button>Log In</Button>
+                <Button>{t('nav.signIn')}</Button>
               </Link>
               <Link href="/signup">
-                <Button variant="outline">Sign Up</Button>
+                <Button variant="outline">{t('nav.getStarted')}</Button>
               </Link>
             </div>
           </CardContent>
@@ -130,17 +132,17 @@ export function DashboardContent() {
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-secondary md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Welcome back, {session.user?.name || 'User'}!
+            {t('dashboard.welcome')}, {session.user?.name || 'User'}!
           </h1>
           <p className="text-muted-foreground">
-            Manage and track all your construction estimates
+            {t('dashboard.title')}
           </p>
         </div>
         <div className="flex gap-2">
           <Link href="/estimator">
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
               <Plus className="mr-2 h-4 w-4" />
-              New Estimate
+              {t('dashboard.newEstimate')}
             </Button>
           </Link>
           <DropdownMenu>
@@ -157,7 +159,7 @@ export function DashboardContent() {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => signOut()}>
                 <LogOut className="mr-2 h-4 w-4" />
-                Log Out
+                {t('nav.logOut')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -172,7 +174,7 @@ export function DashboardContent() {
               <FolderOpen className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total Projects</p>
+              <p className="text-sm text-muted-foreground">{t('dashboard.stats.projects')}</p>
               <p className="text-2xl font-bold text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
                 {stats.totalProjects}
               </p>
@@ -185,9 +187,9 @@ export function DashboardContent() {
               <TrendingUp className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total Estimated Value</p>
+              <p className="text-sm text-muted-foreground">{t('dashboard.stats.value')}</p>
               <p className="text-2xl font-bold text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
-                ${stats.totalValue.toLocaleString()}
+                {formatCurrency(stats.totalValue, currency)}
               </p>
             </div>
           </CardContent>
@@ -198,9 +200,9 @@ export function DashboardContent() {
               <Calculator className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Avg. Project Cost</p>
+              <p className="text-sm text-muted-foreground">{t('dashboard.stats.average')}</p>
               <p className="text-2xl font-bold text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
-                ${Math.round(stats.avgProjectCost).toLocaleString()}
+                {formatCurrency(Math.round(stats.avgProjectCost), currency)}
               </p>
             </div>
           </CardContent>
@@ -211,10 +213,10 @@ export function DashboardContent() {
       <Card className="border-2 border-border">
         <CardHeader>
           <CardTitle className="text-lg text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
-            Saved Estimates
+            {t('dashboard.recent')}
           </CardTitle>
           <CardDescription>
-            Your saved construction estimates
+            {t('dashboard.title')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -222,15 +224,15 @@ export function DashboardContent() {
             <div className="py-12 text-center">
               <FolderOpen className="mx-auto h-12 w-12 text-muted-foreground/50" />
               <h3 className="mt-4 font-semibold text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
-                No estimates yet
+                {t('dashboard.empty.title')}
               </h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Create your first estimate to see it here
+                {t('dashboard.empty.description')}
               </p>
               <Link href="/estimator" className="mt-4 inline-block">
                 <Button className="bg-primary text-primary-foreground">
                   <Plus className="mr-2 h-4 w-4" />
-                  Create Estimate
+                  {t('dashboard.empty.cta')}
                 </Button>
               </Link>
             </div>
@@ -278,7 +280,7 @@ export function DashboardContent() {
                           onClick={() => deleteEstimate(estimate.id)}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
+                          {t('dashboard.actions.delete')}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
