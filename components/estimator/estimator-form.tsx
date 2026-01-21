@@ -4,6 +4,7 @@ import React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useLocale } from "@/lib/locale-context"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -44,6 +45,7 @@ const locations = [
 
 export function EstimatorForm() {
   const router = useRouter()
+  const { t, currency, country } = useLocale()
   const [isCalculating, setIsCalculating] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   
@@ -139,15 +141,25 @@ export function EstimatorForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="space-y-6">
-        {/* Project Type */}
-        <Card className="border-2 border-border">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
-              Step 1: Project Type
+    <>
+      <div className="mb-8 text-center">
+        <h1 className="mb-3 text-3xl font-bold text-secondary md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+          {t('estimator.title')}
+        </h1>
+        <p className="text-muted-foreground">
+          {t('estimator.calculate')}
+        </p>
+      </div>
+      <form onSubmit={handleSubmit}>
+        <div className="space-y-6">
+          {/* Project Type */}
+          <Card className="border-2 border-border">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
+                {t('estimator.projectType')}
+              </CardTitle>
             </CardTitle>
-            <CardDescription>What kind of construction project is this?</CardDescription>
+            <CardDescription>{t('estimator.projectName')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -182,14 +194,14 @@ export function EstimatorForm() {
         <Card className="border-2 border-border">
           <CardHeader className="pb-4">
             <CardTitle className="text-lg text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
-              Step 2: Dimensions
+              {t('estimator.dimensions')}
             </CardTitle>
-            <CardDescription>Enter the measurements in meters</CardDescription>
+            <CardDescription>{t('estimator.location')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
-                <Label htmlFor="length">Length (m)</Label>
+                <Label htmlFor="length">{t('estimator.length')} (m)</Label>
                 <Input
                   id="length"
                   type="number"
@@ -205,7 +217,7 @@ export function EstimatorForm() {
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="width">Width (m)</Label>
+                <Label htmlFor="width">{t('estimator.width')} (m)</Label>
                 <Input
                   id="width"
                   type="number"
@@ -221,7 +233,7 @@ export function EstimatorForm() {
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="height">Height (m)</Label>
+                <Label htmlFor="height">{t('estimator.height')} (m)</Label>
                 <Input
                   id="height"
                   type="number"
@@ -238,7 +250,7 @@ export function EstimatorForm() {
               </div>
             </div>
             <p className="mt-3 text-sm text-muted-foreground">
-              Total floor area: <span className="font-medium text-secondary">{((formData.length || 0) * (formData.width || 0)).toFixed(1)} m²</span>
+              {t('estimator.area')}: <span className="font-medium text-secondary">{((formData.length || 0) * (formData.width || 0)).toFixed(1)} m²</span>
             </p>
           </CardContent>
         </Card>
@@ -318,7 +330,7 @@ export function EstimatorForm() {
               </>
             ) : (
               <>
-                Calculate Materials
+                {t('estimator.calculate')}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </>
             )}
@@ -326,5 +338,6 @@ export function EstimatorForm() {
         </div>
       </div>
     </form>
+    </>
   )
 }
