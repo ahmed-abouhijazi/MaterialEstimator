@@ -258,20 +258,20 @@ export function EstimatorForm() {
         <Card className="border-2 border-border">
           <CardHeader className="pb-4">
             <CardTitle className="text-lg text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
-              Step 3: Location & Quality
+              {t('estimator.step3Title')}
             </CardTitle>
-            <CardDescription>Help us provide accurate local pricing</CardDescription>
+            <CardDescription>{t('estimator.step3Description')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
+                <Label htmlFor="location">{t('estimator.location')}</Label>
                 <Select
                   value={formData.location}
                   onValueChange={(value) => updateField("location", value)}
                 >
                   <SelectTrigger className={`border-2 ${errors.location ? "border-destructive" : "border-input"}`}>
-                    <SelectValue placeholder="Select region" />
+                    <SelectValue placeholder={t('estimator.selectRegion')} />
                   </SelectTrigger>
                   <SelectContent>
                     {locations.map((loc) => (
@@ -286,7 +286,7 @@ export function EstimatorForm() {
                 )}
               </div>
               <div className="space-y-2">
-                <Label>Quality Level</Label>
+                <Label>{t('estimator.qualityLevel')}</Label>
                 <div className="flex gap-2">
                   {qualityLevels.map((level) => (
                     <button

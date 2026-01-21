@@ -21,6 +21,7 @@ import {
 import { type EstimateResult, type MaterialItem, getProjectTypeLabel, getQualityLabel } from "@/lib/calculations"
 import { MaterialRow } from "./material-row"
 import { getCurrencyForLocation, formatCurrency } from "@/lib/currency"
+import { useLocale } from "@/lib/locale-context"
 
 export function ResultsDisplay() {
   const [result, setResult] = useState<EstimateResult | null>(null)
@@ -33,6 +34,7 @@ export function ResultsDisplay() {
   const printRef = useRef<HTMLDivElement>(null)
   const { data: session } = useSession()
   const router = useRouter()
+  const { t, currency } = useLocale()
 
   useEffect(() => {
     // Check access first
@@ -228,21 +230,21 @@ Get your own estimate at: buildcalc.pro`
         <Card className="border-2 border-primary bg-primary/5">
           <CardContent className="py-12">
             <AlertTriangle className="mx-auto h-16 w-16 text-primary mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Subscription Required 🚀</h2>
+            <h2 className="text-2xl font-bold mb-2">{t('estimator.results.subscriptionRequired')} 🚀</h2>
             <p className="text-muted-foreground mb-6">
-              {accessStatus.message || 'You need an active subscription to view estimate results.'}
+              {accessStatus.message || t('estimator.results.subscriptionMessage')}
             </p>
             <div className="flex gap-4 justify-center">
               {!session ? (
                 <>
                   <Link href="/signup">
                     <Button className="bg-primary text-primary-foreground">
-                      Sign Up for Free Trial
+                      {t('estimator.results.signUpForTrial')}
                     </Button>
                   </Link>
                   <Link href="/login">
                     <Button variant="outline">
-                      Log In
+                      {t('estimator.results.logIn')}
                     </Button>
                   </Link>
                 </>
@@ -250,12 +252,12 @@ Get your own estimate at: buildcalc.pro`
                 <>
                   <Link href="/pricing">
                     <Button className="bg-primary text-primary-foreground">
-                      View Pricing Plans
+                      {t('estimator.results.viewPricingPlans')}
                     </Button>
                   </Link>
                   <Link href="/dashboard">
                     <Button variant="outline">
-                      Go to Dashboard
+                      {t('estimator.results.goToDashboard')}
                     </Button>
                   </Link>
                 </>
@@ -273,15 +275,15 @@ Get your own estimate at: buildcalc.pro`
         <div className="rounded-xl border-2 border-border bg-card p-8">
           <AlertTriangle className="mx-auto h-12 w-12 text-destructive" />
           <h2 className="mt-4 text-xl font-bold text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
-            No Estimate Found
+            {t('estimator.results.noEstimateFound')}
           </h2>
           <p className="mt-2 text-muted-foreground">
-            We couldn&apos;t find your estimate. Please create a new one.
+            {t('estimator.results.noEstimateText')}
           </p>
           <Link href="/estimator" className="mt-6 inline-block">
             <Button className="bg-primary text-primary-foreground">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Create New Estimate
+              {t('estimator.results.createNewEstimate')}
             </Button>
           </Link>
         </div>
@@ -296,13 +298,13 @@ Get your own estimate at: buildcalc.pro`
         <div>
           <Link href="/estimator" className="mb-2 inline-flex items-center text-sm text-muted-foreground hover:text-secondary">
             <ArrowLeft className="mr-1 h-4 w-4" />
-            Back to Estimator
+            {t('estimator.results.backToEstimator')}
           </Link>
           <h1 className="text-2xl font-bold text-secondary md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>
-            Your Material Estimate
+            {t('estimator.results.yourEstimate')}
           </h1>
           <p className="text-muted-foreground">
-            Project ID: <span className="font-mono text-secondary">{result.projectId}</span>
+            {t('estimator.results.projectId')}: <span className="font-mono text-secondary">{result.projectId}</span>
           </p>
         </div>
         <div className="flex gap-2 print:hidden">
@@ -314,29 +316,29 @@ Get your own estimate at: buildcalc.pro`
             {saveSuccess ? (
               <>
                 <CheckCircle className="mr-2 h-4 w-4" />
-                Saved!
+                {t('estimator.results.saved')}
               </>
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                {saving ? 'Saving...' : (session ? 'Save to Dashboard' : 'Sign in to Save')}
+                {saving ? t('estimator.results.saving') : (session ? t('estimator.results.save') : t('estimator.results.signInToSave'))}
               </>
             )}
           </Button>
           <Button variant="outline" onClick={handlePrint} className="border-2 border-secondary text-secondary bg-transparent">
             <Printer className="mr-2 h-4 w-4" />
-            Print PDF
+            {t('estimator.results.printPDF')}
           </Button>
           <Button variant="outline" onClick={handleShare} className="border-2 border-secondary text-secondary bg-transparent">
             {shareSuccess ? (
               <>
                 <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
-                Copied!
+                {t('estimator.results.copied')}
               </>
             ) : (
               <>
                 <Share2 className="mr-2 h-4 w-4" />
-                Share
+                {t('estimator.results.share')}
               </>
             )}
           </Button>
@@ -348,29 +350,29 @@ Get your own estimate at: buildcalc.pro`
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2" style={{ fontFamily: 'var(--font-display)' }}>
             <FileText className="h-5 w-5 text-primary" />
-            Project Summary
+            {t('estimator.results.projectSummary')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
-              <p className="text-sm text-secondary-foreground/70">Project Type</p>
+              <p className="text-sm text-secondary-foreground/70">{t('estimator.results.projectType')}</p>
               <p className="font-semibold">{getProjectTypeLabel(result.projectDetails.projectType)}</p>
             </div>
             <div>
-              <p className="text-sm text-secondary-foreground/70">Dimensions</p>
+              <p className="text-sm text-secondary-foreground/70">{t('estimator.results.dimensions')}</p>
               <p className="font-semibold">
                 {result.projectDetails.length}m x {result.projectDetails.width}m x {result.projectDetails.height}m
               </p>
             </div>
             <div>
-              <p className="text-sm text-secondary-foreground/70">Floor Area</p>
+              <p className="text-sm text-secondary-foreground/70">{t('estimator.area')}</p>
               <p className="font-semibold">
                 {(result.projectDetails.length * result.projectDetails.width).toFixed(1)} m²
               </p>
             </div>
             <div>
-              <p className="text-sm text-secondary-foreground/70">Quality Level</p>
+              <p className="text-sm text-secondary-foreground/70">{t('estimator.results.quality')}</p>
               <p className="font-semibold">{getQualityLabel(result.projectDetails.qualityLevel)}</p>
             </div>
           </div>
@@ -381,28 +383,28 @@ Get your own estimate at: buildcalc.pro`
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
         <Card className="border-2 border-border">
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Subtotal</p>
+            <p className="text-sm text-muted-foreground">{t('estimator.results.subtotal')}</p>
             <p className="text-2xl font-bold text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
-              ${result.subtotal.toLocaleString()}
+              {formatCurrency(result.subtotal, currency)}
             </p>
           </CardContent>
         </Card>
         <Card className="border-2 border-border">
           <CardContent className="pt-6">
             <p className="flex items-center gap-1 text-sm text-muted-foreground">
-              Waste Buffer ({result.wasteBufferPercentage}%)
+              {t('estimator.results.wasteBuffer')} ({result.wasteBufferPercentage}%)
               <AlertTriangle className="h-3 w-3" />
             </p>
             <p className="text-2xl font-bold text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
-              +${result.wasteBuffer.toLocaleString()}
+              +{formatCurrency(result.wasteBuffer, currency)}
             </p>
           </CardContent>
         </Card>
         <Card className="border-2 border-primary bg-primary/5">
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-primary">Total Estimated Cost</p>
+            <p className="text-sm font-medium text-primary">{t('estimator.results.totalEstimatedCost')}</p>
             <p className="text-3xl font-bold text-primary" style={{ fontFamily: 'var(--font-display)' }}>
-              ${result.total.toLocaleString()}
+              {formatCurrency(result.total, currency)}
             </p>
           </CardContent>
         </Card>
@@ -413,11 +415,11 @@ Get your own estimate at: buildcalc.pro`
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
-              Material List ({result.materials.length} items)
+              {t('estimator.results.materialList')} ({result.materials.length} {t('estimator.results.items')})
             </CardTitle>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span>Click materials to view brand options</span>
+              <span>{t('estimator.results.clickForBrands')}</span>
             </div>
           </div>
         </CardHeader>
@@ -431,10 +433,10 @@ Get your own estimate at: buildcalc.pro`
                 <table className="w-full">
                   <thead>
                     <tr className="text-left text-sm text-muted-foreground">
-                      <th className="pb-2 pr-4">Material</th>
-                      <th className="pb-2 pr-4 text-right">Quantity</th>
-                      <th className="pb-2 pr-4 text-right">Unit Price</th>
-                      <th className="pb-2 text-right">Total</th>
+                      <th className="pb-2 pr-4">{t('estimator.results.material')}</th>
+                      <th className="pb-2 pr-4 text-right">{t('estimator.results.quantity')}</th>
+                      <th className="pb-2 pr-4 text-right">{t('estimator.results.unitPrice')}</th>
+                      <th className="pb-2 text-right">{t('estimator.results.total')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -463,11 +465,9 @@ Get your own estimate at: buildcalc.pro`
         <div className="flex gap-3">
           <AlertTriangle className="h-5 w-5 shrink-0 text-primary" />
           <div className="text-sm text-muted-foreground">
-            <p className="mb-1 font-semibold text-secondary">Important Note</p>
+            <p className="mb-1 font-semibold text-secondary">{t('estimator.results.disclaimer')}</p>
             <p>
-              This estimate is based on standard construction formulas and average material prices. 
-              Actual quantities and costs may vary based on local conditions, supplier pricing, 
-              and specific project requirements. Always consult with a professional before purchasing materials.
+              {t('estimator.results.disclaimerText')}
             </p>
           </div>
         </div>
@@ -478,20 +478,20 @@ Get your own estimate at: buildcalc.pro`
         <Link href="/estimator">
           <Button variant="outline" className="w-full border-2 border-secondary text-secondary sm:w-auto bg-transparent">
             <Calculator className="mr-2 h-4 w-4" />
-            New Estimate
+            {t('estimator.results.newEstimate')}
           </Button>
         </Link>
         <Link href="/dashboard">
           <Button className="w-full bg-primary text-primary-foreground sm:w-auto">
             <Download className="mr-2 h-4 w-4" />
-            Save to Dashboard
+            {t('estimator.results.save')}
           </Button>
         </Link>
       </div>
 
       {/* Print timestamp */}
       <p className="mt-8 text-center text-sm text-muted-foreground">
-        Generated on {result.generatedAt.toLocaleDateString()} at {result.generatedAt.toLocaleTimeString()} | BuildCalc Pro
+        {t('estimator.results.generatedOn')} {result.generatedAt.toLocaleDateString()} {t('estimator.results.at')} {result.generatedAt.toLocaleTimeString()} | BuildCalc Pro
       </p>
     </div>
   )

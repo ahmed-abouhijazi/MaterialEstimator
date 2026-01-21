@@ -1,11 +1,8 @@
+"use client"
+
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PricingContent } from "@/components/pricing/pricing-content"
-
-export const metadata = {
-  title: "Pricing - BuildCalc Pro",
-  description: "Simple, transparent pricing for construction professionals. Start free, upgrade when you need more.",
-}
 
 export default function PricingPage() {
   return (
