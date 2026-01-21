@@ -22,6 +22,13 @@ export interface ProjectInput {
   location: string
   qualityLevel: QualityLevel
   estimationMode?: EstimationMode
+  // Advanced mode fields
+  numberOfRooms?: number
+  numberOfBathrooms?: number
+  numberOfFloors?: number
+  hasBasement?: boolean
+  hasGarage?: boolean
+  kitchenSize?: "small" | "medium" | "large"
 }
 
 export interface MaterialItem {
@@ -120,11 +127,16 @@ function calculateConcreteVolume(area: number, thickness: number): number {
 
 export function calculateMaterials(input: ProjectInput): EstimateResult {
   const materials: MaterialItem[] = []
-  const { projectType, length, width, height, qualityLevel, estimationMode = 'simple' } = input
+  const { projectType, length, width, height, qualityLevel, estimationMode = 'simple', numberOfRooms, numberOfBathrooms, numberOfFloors, hasBasement, hasGarage, kitchenSize } = input
 
   const floorArea = calculateFloorArea(length, width)
   const wallArea = calculateWallArea(length, width, height)
   const roofArea = calculateRoofArea(length, width)
+  
+  // Use advanced inputs or defaults
+  const bathroomsCount = numberOfBathrooms || Math.max(1, Math.floor(floorArea / 50))
+  const roomsCount = numberOfRooms || Math.max(2, Math.floor(floorArea / 15))
+  const floorsCount = numberOfFloors || 1
 
   // Calculate materials based on project type
   switch (projectType) {
@@ -300,7 +312,7 @@ export function calculateMaterials(input: ProjectInput): EstimateResult {
           category: "Electrical",
         })
 
-        const switchesCount = Math.ceil(floorArea / 15) + Math.ceil(doorCount) // switches for rooms
+        const switchesCount = roomsCount + bathroomsCount + 2 // switches for rooms + bathrooms + common areas
         materials.push({
           name: "Light Switches",
           quantity: switchesCount,
@@ -324,8 +336,6 @@ export function calculateMaterials(input: ProjectInput): EstimateResult {
 
       // Advanced plumbing components
       if (estimationMode === 'advanced') {
-        const bathroomsCount = Math.max(1, Math.floor(floorArea / 50)) // ~1 bathroom per 50m²
-
         materials.push({
           name: "Water Heater",
           quantity: bathroomsCount,
@@ -396,7 +406,6 @@ export function calculateMaterials(input: ProjectInput): EstimateResult {
 
       // Advanced finishing
       if (estimationMode === 'advanced') {
-        const bathroomsCount = Math.max(1, Math.floor(floorArea / 50))
         const bathroomWallTiles = Math.ceil(bathroomsCount * 20) // ~20m² per bathroom
 
         materials.push({
@@ -448,7 +457,7 @@ export function calculateMaterials(input: ProjectInput): EstimateResult {
       })
 
       // Doors
-      const doorCount = Math.ceil(floorArea / 20) + 1 // 1 door per 20m² + main door
+      const doorCount = roomsCount + 1 // doors for each room + main door
       materials.push({
         name: "Doors",
         quantity: doorCount,

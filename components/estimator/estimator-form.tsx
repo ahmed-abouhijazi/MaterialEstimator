@@ -155,6 +155,38 @@ export function EstimatorForm() {
       </div>
       <form onSubmit={handleSubmit}>
         <div className="space-y-6">
+          
+          {/* Estimation Mode - AT THE TOP */}
+          <Card className="border-2 border-primary/30 bg-primary/5">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
+                {t('estimator.estimationMode')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Tabs
+                value={formData.estimationMode || 'simple'}
+                onValueChange={(value) => updateField("estimationMode", value as EstimationMode)}
+                className="w-full"
+              >
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="simple">{t('estimator.estimationModes.simple')}</TabsTrigger>
+                  <TabsTrigger value="advanced">{t('estimator.estimationModes.advanced')}</TabsTrigger>
+                </TabsList>
+                <TabsContent value="simple" className="mt-4">
+                  <p className="text-sm text-muted-foreground">
+                    {t('estimator.estimationModes.simpleDesc')}
+                  </p>
+                </TabsContent>
+                <TabsContent value="advanced" className="mt-4">
+                  <p className="text-sm text-muted-foreground">
+                    {t('estimator.estimationModes.advancedDesc')}
+                  </p>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+
           {/* Project Type */}
           <Card className="border-2 border-border">
             <CardHeader className="pb-4">
@@ -257,6 +289,131 @@ export function EstimatorForm() {
           </CardContent>
         </Card>
 
+        {/* Advanced Options - Dynamic based on project type */}
+        {formData.estimationMode === 'advanced' && (formData.projectType === 'house' || formData.projectType === 'extension') && (
+          <Card className="border-2 border-primary/40 bg-gradient-to-br from-primary/5 to-primary/10">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
+                {t('estimator.advancedOptions.title')}
+              </CardTitle>
+              <CardDescription>Provide detailed information for accurate estimation</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="numberOfRooms">{t('estimator.advancedOptions.numberOfRooms')}</Label>
+                  <Input
+                    id="numberOfRooms"
+                    type="number"
+                    min="1"
+                    placeholder="e.g., 3"
+                    value={formData.numberOfRooms || ""}
+                    onChange={(e) => updateField("numberOfRooms", parseInt(e.target.value) || undefined)}
+                    className="border-2 border-input"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="numberOfBathrooms">{t('estimator.advancedOptions.numberOfBathrooms')}</Label>
+                  <Input
+                    id="numberOfBathrooms"
+                    type="number"
+                    min="1"
+                    placeholder="e.g., 2"
+                    value={formData.numberOfBathrooms || ""}
+                    onChange={(e) => updateField("numberOfBathrooms", parseInt(e.target.value) || undefined)}
+                    className="border-2 border-input"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="numberOfFloors">{t('estimator.advancedOptions.numberOfFloors')}</Label>
+                  <Input
+                    id="numberOfFloors"
+                    type="number"
+                    min="1"
+                    placeholder="e.g., 1"
+                    value={formData.numberOfFloors || ""}
+                    onChange={(e) => updateField("numberOfFloors", parseInt(e.target.value) || undefined)}
+                    className="border-2 border-input"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('estimator.advancedOptions.kitchenSize')}</Label>
+                  <div className="flex gap-2">
+                    {['small', 'medium', 'large'].map((size) => (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => updateField("kitchenSize", size as "small" | "medium" | "large")}
+                        className={`flex-1 rounded-lg border-2 px-3 py-2 text-sm transition-all ${
+                          formData.kitchenSize === size
+                            ? "border-primary bg-primary/10 font-medium"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                      >
+                        {t(`estimator.advancedOptions.${size}`)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('estimator.advancedOptions.hasBasement')}</Label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => updateField("hasBasement", true)}
+                      className={`flex-1 rounded-lg border-2 px-3 py-2 text-sm transition-all ${
+                        formData.hasBasement === true
+                          ? "border-primary bg-primary/10 font-medium"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      {t('estimator.advancedOptions.yes')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateField("hasBasement", false)}
+                      className={`flex-1 rounded-lg border-2 px-3 py-2 text-sm transition-all ${
+                        formData.hasBasement === false
+                          ? "border-primary bg-primary/10 font-medium"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      {t('estimator.advancedOptions.no')}
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('estimator.advancedOptions.hasGarage')}</Label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => updateField("hasGarage", true)}
+                      className={`flex-1 rounded-lg border-2 px-3 py-2 text-sm transition-all ${
+                        formData.hasGarage === true
+                          ? "border-primary bg-primary/10 font-medium"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      {t('estimator.advancedOptions.yes')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateField("hasGarage", false)}
+                      className={`flex-1 rounded-lg border-2 px-3 py-2 text-sm transition-all ${
+                        formData.hasGarage === false
+                          ? "border-primary bg-primary/10 font-medium"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      {t('estimator.advancedOptions.no')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Location & Quality */}
         <Card className="border-2 border-border">
           <CardHeader className="pb-4">
@@ -309,37 +466,6 @@ export function EstimatorForm() {
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Estimation Mode */}
-        <Card className="border-2 border-primary/30 bg-primary/5">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
-              {t('estimator.estimationMode')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs
-              value={formData.estimationMode || 'simple'}
-              onValueChange={(value) => updateField("estimationMode", value as EstimationMode)}
-              className="w-full"
-            >
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="simple">{t('estimator.estimationModes.simple')}</TabsTrigger>
-                <TabsTrigger value="advanced">{t('estimator.estimationModes.advanced')}</TabsTrigger>
-              </TabsList>
-              <TabsContent value="simple" className="mt-4">
-                <p className="text-sm text-muted-foreground">
-                  {t('estimator.estimationModes.simpleDesc')}
-                </p>
-              </TabsContent>
-              <TabsContent value="advanced" className="mt-4">
-                <p className="text-sm text-muted-foreground">
-                  {t('estimator.estimationModes.advancedDesc')}
-                </p>
-              </TabsContent>
-            </Tabs>
           </CardContent>
         </Card>
 

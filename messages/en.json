@@ -170,6 +170,20 @@
       "advanced": "Advanced",
       "advancedDesc": "Complete materials including electrical components, plumbing fixtures, formwork, waterproofing, and finishing details"
     },
+    "advancedOptions": {
+      "title": "Project Details",
+      "numberOfRooms": "Number of Rooms",
+      "numberOfBathrooms": "Number of Bathrooms",
+      "numberOfFloors": "Number of Floors",
+      "hasBasement": "Has Basement",
+      "hasGarage": "Has Garage",
+      "kitchenSize": "Kitchen Size",
+      "small": "Small",
+      "medium": "Medium",
+      "large": "Large",
+      "yes": "Yes",
+      "no": "No"
+    },
     "results": {
       "title": "Estimate Results",
       "summary": "Cost Summary",

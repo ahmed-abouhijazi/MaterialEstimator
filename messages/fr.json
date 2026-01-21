@@ -170,6 +170,20 @@
       "advanced": "Avancé",
       "advancedDesc": "Matériaux complets incluant composants électriques, équipements sanitaires, coffrage, étanchéité et détails de finition"
     },
+    "advancedOptions": {
+      "title": "Détails du projet",
+      "numberOfRooms": "Nombre de pièces",
+      "numberOfBathrooms": "Nombre de salles de bain",
+      "numberOfFloors": "Nombre d'étages",
+      "hasBasement": "A un sous-sol",
+      "hasGarage": "A un garage",
+      "kitchenSize": "Taille de la cuisine",
+      "small": "Petite",
+      "medium": "Moyenne",
+      "large": "Grande",
+      "yes": "Oui",
+      "no": "Non"
+    },
     "results": {
       "title": "Résultats de l'estimation",
       "summary": "Résumé des coûts",
