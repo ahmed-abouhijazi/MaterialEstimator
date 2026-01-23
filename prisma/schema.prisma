@@ -18,6 +18,8 @@ model User {
   emailVerified DateTime?
   password      String
   image         String?
+  role          String    @default("CUSTOMER") // ADMIN, MANAGER, STAFF, CUSTOMER
+  isActive      Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   
@@ -37,6 +39,8 @@ model User {
   accounts      Account[]
   cartItems     CartItem[]
   orders        Order[]
+  
+  @@index([role])
 }
 
 model Product {
@@ -47,8 +51,12 @@ model Product {
   price         Float
   currency      String   @default("USD")
   unit          String   // bag, ton, piece, meter, roll, etc.
+  sku           String?  @unique
+  barcode       String?
   imageUrl      String?
   stock         Int      @default(0)
+  minStock      Int      @default(10)
+  maxStock      Int      @default(1000)
   brand         String?
   specifications String? // JSON stringified object
   isActive      Boolean  @default(true)
@@ -62,6 +70,7 @@ model Product {
   
   @@index([category])
   @@index([isActive])
+  @@index([sku])
 }
 
 model CartItem {
