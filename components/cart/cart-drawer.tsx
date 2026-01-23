@@ -134,11 +134,11 @@ export function CartDrawer({ open, onOpenChange, onCartUpdate }: CartDrawerProps
     router.push("/cart")
   }
 
-  const subtotal = cartItconvertToUserCurrency(item.product.price, item.product.currency) * item.quantity,
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + convertToUserCurrency(item.product.price, item.product.currency) * item.quantity,
     0
   )
-  const shipping = subtotal > 0 ? convertToUserCurrency(50, 'USD')
-  const shipping = subtotal > 0 ? 50 : 0
+  const shipping = subtotal > 0 ? convertToUserCurrency(50, 'USD') : 0
   const total = subtotal + shipping
 
   return (
