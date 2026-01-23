@@ -75,6 +75,7 @@ const InventoryPage = () => {
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isStockDialogOpen, setIsStockDialogOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
@@ -255,6 +256,117 @@ const InventoryPage = () => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          {/* Edit Product Dialog */}
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Modifier le produit</DialogTitle>
+                <DialogDescription className="text-slate-400">
+                  Modifiez les informations du produit
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Nom du produit</Label>
+                    <Input
+                      defaultValue={selectedProduct?.name}
+                      placeholder="Ex: Ciment Portland CEM I"
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">SKU</Label>
+                    <Input
+                      defaultValue={selectedProduct?.sku}
+                      placeholder="Ex: CIM-001"
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-slate-300">Description</Label>
+                  <Textarea
+                    defaultValue={selectedProduct?.description}
+                    placeholder="Description du produit..."
+                    className="bg-slate-800/50 border-slate-700 text-white resize-none"
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Prix (MAD)</Label>
+                    <Input
+                      type="number"
+                      defaultValue={selectedProduct?.price}
+                      placeholder="0.00"
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Unité</Label>
+                    <Input
+                      defaultValue={selectedProduct?.unit}
+                      placeholder="Ex: sac 50kg"
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Catégorie</Label>
+                    <Select defaultValue={selectedProduct?.category}>
+                      <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                        <SelectValue placeholder="Sélectionner" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-900 border-slate-800">
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id} className="text-white focus:bg-slate-800">
+                            {cat.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Stock actuel</Label>
+                    <Input
+                      type="number"
+                      defaultValue={selectedProduct?.stock}
+                      placeholder="0"
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Stock minimum</Label>
+                    <Input
+                      type="number"
+                      defaultValue={selectedProduct?.minStock}
+                      placeholder="5"
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Stock maximum</Label>
+                    <Input
+                      type="number"
+                      defaultValue={selectedProduct?.maxStock}
+                      placeholder="100"
+                      className="bg-slate-800/50 border-slate-700 text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="border-slate-700 text-slate-300 hover:bg-slate-800">
+                  Annuler
+                </Button>
+                <Button className="bg-gradient-to-r from-amber-500 to-orange-600 text-white">
+                  Enregistrer les modifications
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Stats */}
@@ -429,7 +541,13 @@ const InventoryPage = () => {
                             <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800">
                               <DropdownMenuLabel className="text-slate-400">Actions</DropdownMenuLabel>
                               <DropdownMenuSeparator className="bg-slate-800" />
-                              <DropdownMenuItem className="text-white focus:bg-slate-800">
+                              <DropdownMenuItem 
+                                className="text-white focus:bg-slate-800"
+                                onClick={() => {
+                                  setSelectedProduct(product)
+                                  setIsEditDialogOpen(true)
+                                }}
+                              >
                                 <Pencil className="h-4 w-4 mr-2" />
                                 Modifier
                               </DropdownMenuItem>
