@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 
     // Check if user is admin
     const user = await prisma.user.findUnique({
-      where: { id: payload.userId as string },
+      where: { id: payload.id as string },
       select: { role: true }
     })
 
@@ -88,7 +88,7 @@ export async function PATCH(request: NextRequest) {
 
     // Check if user is admin
     const user = await prisma.user.findUnique({
-      where: { id: payload.userId as string },
+      where: { id: payload.id as string },
       select: { role: true }
     })
 
