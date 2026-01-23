@@ -179,7 +179,10 @@ const InventoryPage = () => {
     } finally {
       setSaving(false)
     }
-  } setImageFile(null)
+  }
+
+  const removeImage = () => {
+    setImageFile(null)
     setImagePreview("")
   }
 
