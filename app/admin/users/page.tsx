@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -54,13 +54,14 @@ import {
   Mail,
   Phone,
   Calendar,
+  Loader2,
 } from "lucide-react"
-import { users } from "@/lib/admin/mock-data"
-import type { User, UserRole } from "@/lib/admin/types"
 import { format, formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
 import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
+
+type UserRole = 'ADMIN' | 'MANAGER' | 'STAFF' | 'CUSTOMER'
 
 const roleConfig: Record<UserRole, { label: string; className: string }> = {
   ADMIN: { label: "Administrateur", className: "bg-red-500/10 text-red-400 border-red-500/20" },
@@ -74,23 +75,50 @@ function Loading() {
 }
 
 export default function UsersPage() {
+  const [users, setUsers] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [roleFilter, setRoleFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [selectedUser, setSelectedUser] = useState<any | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+
+  useEffect(() => {
+    fetchUsers()
+  }, [])
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/admin/users')
+      if (!response.ok) throw new Error('Failed to fetch users')
+      const data = await response.json()
+      setUsers(data.users || [])
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+      </div>
+    )
+  }
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.phone?.toLowerCase().includes(searchQuery.toLowerCase())
+      user.email.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesRole = roleFilter === "all" || user.role === roleFilter
     const matchesStatus =
       statusFilter === "all" ||
-      (statusFilter === "active" && user.isActive) ||
-      (statusFilter === "inactive" && !user.isActive)
+      (statusFilter === "active" && user.isActive !== false) ||
+      (statusFilter === "inactive" && user.isActive === false)
     return matchesSearch && matchesRole && matchesStatus
   })
 

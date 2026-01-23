@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -51,23 +51,50 @@ import {
   ArrowUpDown,
   PackagePlus,
   PackageMinus,
+  Loader2,
 } from "lucide-react"
-import { products, categories } from "@/lib/admin/mock-data"
-import type { Product } from "@/lib/admin/types"
 import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
 import Loading from "./loading"
 
 const InventoryPage = () => {
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isStockDialogOpen, setIsStockDialogOpen] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [stockFilter, setStockFilter] = useState("all")
 
+  useEffect(() => {
+    fetchProducts()
+  }, [])
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/admin/products')
+      if (!response.ok) throw new Error('Failed to fetch products')
+      const data = await response.json()
+      setProducts(data.products || [])
+    } catch (error) {
+      console.error('Error fetching products:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+      </div>
+    )
+  }
+
   const filteredProducts = products.filter((product) => {
-    if (categoryFilter !== "all" && product.category?.id !== categoryFilter) {
+    if (categoryFilter !== "all" && product.category !== categoryFilter) {
       return false
     }
     if (stockFilter === "ok" && product.stock < product.minStock) {
@@ -79,20 +106,23 @@ const InventoryPage = () => {
     if (stockFilter === "out" && product.stock > 0) {
       return false
     }
-    return product.name.toLowerCase().includes(searchQuery.toLowerCase()) || product.sku.toLowerCase().includes(searchQuery.toLowerCase())
+    const searchLower = searchQuery.toLowerCase()
+    return product.name?.toLowerCase().includes(searchLower) || 
+           product.sku?.toLowerCase().includes(searchLower) ||
+           product.description?.toLowerCase().includes(searchLower)
   })
 
-  const getStockStatus = (product: Product) => {
+  const getStockStatus = (product: any) => {
     if (product.stock === 0) {
       return { label: "Rupture", className: "bg-red-500/10 text-red-400 border-red-500/20" }
     }
-    if (product.stock < product.minStock) {
+    if (product.stock < (product.minStock || 10)) {
       return { label: "Stock faible", className: "bg-amber-500/10 text-amber-400 border-amber-500/20" }
     }
     return { label: "En stock", className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" }
   }
 
-  const lowStockCount = products.filter((p) => p.stock < p.minStock && p.stock > 0).length
+  const lowStockCount = products.filter((p) => p.stock < (p.minStock || 10) && p.stock > 0).length
   const outOfStockCount = products.filter((p) => p.stock === 0).length
 
   return (
