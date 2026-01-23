@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useLocale } from "@/lib/locale-context"
+import { useCurrency } from "@/hooks/use-currency"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -30,6 +31,7 @@ export function CheckoutContent() {
   const { data: session } = useSession()
   const router = useRouter()
   const { t } = useLocale()
+  const { formatPrice, convertToUserCurrency, currency: userCurrency } = useCurrency()
   const { toast } = useToast()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -146,10 +148,10 @@ export function CheckoutContent() {
   }
 
   const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
+    (sum, item) => sum + convertToUserCurrency(item.product.price, item.product.currency) * item.quantity,
     0
   )
-  const shippingCost = formData.shippingMethod === "express" ? 100 : formData.shippingMethod === "standard" ? 50 : 0
+  const shippingCost = formData.shippingMethod === "express" ? convertToUserCurrency(100, 'USD') : formData.shippingMethod === "standard" ? convertToUserCurrency(50, 'USD') : 0
   const total = subtotal + shippingCost
 
   if (loading) {
@@ -187,7 +189,7 @@ export function CheckoutContent() {
                   <div key={item.id} className="flex justify-between">
                     <span>{item.product.name} x {item.quantity}</span>
                     <span className="font-semibold">
-                      {item.product.currency} {(item.product.price * item.quantity).toFixed(2)}
+                      {formatPrice(item.product.price * item.quantity, item.product.currency)}
                     </span>
                   </div>
                 ))}
@@ -195,7 +197,7 @@ export function CheckoutContent() {
                 <div className="flex justify-between font-bold text-base">
                   <span>{t("cart.grandTotal")}</span>
                   <span className="text-primary">
-                    {cartItems[0]?.product.currency || "USD"} {total.toFixed(2)}
+                    {formatPrice(total, userCurrency)}
                   </span>
                 </div>
               </div>
@@ -412,7 +414,7 @@ export function CheckoutContent() {
                           {item.product.name} x {item.quantity}
                         </span>
                         <span className="font-semibold">
-                          {item.product.currency} {(item.product.price * item.quantity).toFixed(2)}
+                          {formatPrice(item.product.price * item.quantity, item.product.currency)}
                         </span>
                       </div>
                     ))}
@@ -422,13 +424,13 @@ export function CheckoutContent() {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{t("cart.subtotal")}</span>
                       <span className="font-semibold">
-                        {cartItems[0]?.product.currency || "USD"} {subtotal.toFixed(2)}
+                        {formatPrice(subtotal, userCurrency)}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{t("cart.shipping")}</span>
                       <span className="font-semibold">
-                        {cartItems[0]?.product.currency || "USD"} {shippingCost.toFixed(2)}
+                        {formatPrice(shippingCost, userCurrency)}
                       </span>
                     </div>
                   </div>
@@ -436,7 +438,7 @@ export function CheckoutContent() {
                   <div className="flex justify-between text-xl font-bold">
                     <span className="text-secondary">{t("cart.grandTotal")}</span>
                     <span className="text-primary">
-                      {cartItems[0]?.product.currency || "USD"} {total.toFixed(2)}
+                      {formatPrice(total, userCurrency)}
                     </span>
                   </div>
                 </CardContent>

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useLocale } from "@/lib/locale-context"
+import { useCurrency } from "@/hooks/use-currency"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -32,6 +33,7 @@ export function CartContent() {
   const { data: session } = useSession()
   const router = useRouter()
   const { t } = useLocale()
+  const { formatPrice, convertToUserCurrency, currency: userCurrency } = useCurrency()
   const { toast } = useToast()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -164,10 +166,10 @@ export function CartContent() {
   }
 
   const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
+    (sum, item) => sum + convertToUserCurrency(item.product.price, item.product.currency) * item.quantity,
     0
   )
-  const shipping = subtotal > 0 ? 50 : 0 // Example shipping cost
+  const shipping = subtotal > 0 ? convertToUserCurrency(50, 'USD') : 0 // Example shipping cost
   const total = subtotal + shipping
 
   if (loading) {
@@ -255,7 +257,7 @@ export function CartContent() {
                       </p>
                       <div className="flex items-center gap-4">
                         <span className="text-xl font-bold text-primary">
-                          {item.product.currency} {item.product.price.toFixed(2)}
+                          {formatPrice(item.product.price, item.product.currency)}
                         </span>
                         <span className="text-sm text-muted-foreground">
                           /{item.product.unit}
@@ -299,8 +301,7 @@ export function CartContent() {
                         </Button>
                       </div>
                       <span className="text-lg font-bold text-secondary">
-                        {item.product.currency}{" "}
-                        {(item.product.price * item.quantity).toFixed(2)}
+                        {formatPrice(item.product.price * item.quantity, item.product.currency)}
                       </span>
                     </div>
                   </div>
@@ -328,20 +329,20 @@ export function CartContent() {
                 <div className="flex justify-between text-base">
                   <span className="text-muted-foreground">{t("cart.subtotal")}</span>
                   <span className="font-semibold">
-                    {cartItems[0]?.product.currency || "USD"} {subtotal.toFixed(2)}
+                    {formatPrice(subtotal, userCurrency)}
                   </span>
                 </div>
                 <div className="flex justify-between text-base">
                   <span className="text-muted-foreground">{t("cart.shipping")}</span>
                   <span className="font-semibold">
-                    {cartItems[0]?.product.currency || "USD"} {shipping.toFixed(2)}
+                    {formatPrice(shipping, userCurrency)}
                   </span>
                 </div>
                 <Separator />
                 <div className="flex justify-between text-lg font-bold">
                   <span className="text-secondary">{t("cart.grandTotal")}</span>
                   <span className="text-primary text-2xl">
-                    {cartItems[0]?.product.currency || "USD"} {total.toFixed(2)}
+                    {formatPrice(total, userCurrency)}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">

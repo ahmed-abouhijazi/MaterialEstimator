@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useLocale } from "@/lib/locale-context"
+import { useCurrency } from "@/hooks/use-currency"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -45,6 +46,7 @@ export function OrdersContent() {
   const { data: session } = useSession()
   const router = useRouter()
   const { t } = useLocale()
+  const { formatPrice } = useCurrency()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
@@ -180,7 +182,7 @@ export function OrdersContent() {
                       {getStatusBadge(order.status)}
                       <div className="text-right">
                         <p className="text-2xl font-bold text-primary">
-                          {order.currency} {order.totalAmount.toFixed(2)}
+                          {formatPrice(order.totalAmount, order.currency)}
                         </p>
                       </div>
                     </div>
@@ -225,7 +227,7 @@ export function OrdersContent() {
                           {item.product.name} x {item.quantity}
                         </span>
                         <span className="font-semibold">
-                          {order.currency} {(item.price * item.quantity).toFixed(2)}
+                          {formatPrice(item.price * item.quantity, order.currency)}
                         </span>
                       </div>
                     ))}
@@ -261,11 +263,11 @@ export function OrdersContent() {
                                 <div>
                                   <p className="font-medium">{item.product.name}</p>
                                   <p className="text-sm text-muted-foreground">
-                                    {item.quantity} x {order.currency} {item.price.toFixed(2)} / {item.product.unit}
+                                    {item.quantity} x {formatPrice(item.price, order.currency)} / {item.product.unit}
                                   </p>
                                 </div>
                                 <p className="font-bold">
-                                  {order.currency} {(item.price * item.quantity).toFixed(2)}
+                                  {formatPrice(item.price * item.quantity, order.currency)}
                                 </p>
                               </div>
                             ))}
@@ -273,7 +275,7 @@ export function OrdersContent() {
                             <div className="flex justify-between text-lg font-bold">
                               <span>{t("cart.grandTotal")}</span>
                               <span className="text-primary">
-                                {order.currency} {order.totalAmount.toFixed(2)}
+                                {formatPrice(order.totalAmount, order.currency)}
                               </span>
                             </div>
                           </div>

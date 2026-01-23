@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useLocale } from "@/lib/locale-context"
+import { useCurrency } from "@/hooks/use-currency"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -47,6 +48,7 @@ export function ShopSection({ onCartUpdate }: ShopSectionProps) {
   const { data: session } = useSession()
   const router = useRouter()
   const { t } = useLocale()
+  const { formatPrice } = useCurrency()
   const { toast } = useToast()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -261,7 +263,7 @@ export function ShopSection({ onCartUpdate }: ShopSectionProps) {
                             <div className="flex items-end justify-between mb-4">
                               <div>
                                 <span className="text-3xl font-bold text-primary">
-                                  {product.currency} {product.price.toFixed(2)}
+                                  {formatPrice(product.price, product.currency)}
                                 </span>
                                 <span className="text-sm text-muted-foreground ml-1">
                                   /{product.unit}
@@ -324,7 +326,7 @@ export function ShopSection({ onCartUpdate }: ShopSectionProps) {
                         <div className="flex justify-between items-center mb-3">
                           <div>
                             <span className="text-xl font-bold text-primary">
-                              {product.currency} {product.price.toFixed(2)}
+                              {formatPrice(product.price, product.currency)}
                             </span>
                             <span className="text-xs text-muted-foreground">
                               /{product.unit}
@@ -381,7 +383,7 @@ export function ShopSection({ onCartUpdate }: ShopSectionProps) {
                       <div className="flex justify-between items-center mb-3">
                         <div>
                           <span className="text-xl font-bold text-primary">
-                            {product.currency} {product.price.toFixed(2)}
+                            {formatPrice(product.price, product.currency)}
                           </span>
                           <span className="text-xs text-muted-foreground">
                             /{product.unit}

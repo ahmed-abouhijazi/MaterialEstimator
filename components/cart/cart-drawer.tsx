@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator"
 import { ShoppingCart, Trash2, Plus, Minus, Package, ArrowRight } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useLocale } from "@/lib/locale-context"
+import { useCurrency } from "@/hooks/use-currency"
 import Image from "next/image"
 
 interface CartItem {
@@ -41,6 +42,7 @@ interface CartDrawerProps {
 export function CartDrawer({ open, onOpenChange, onCartUpdate }: CartDrawerProps) {
   const router = useRouter()
   const { t } = useLocale()
+  const { formatPrice, convertToUserCurrency, currency: userCurrency } = useCurrency()
   const { toast } = useToast()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(false)
@@ -132,10 +134,10 @@ export function CartDrawer({ open, onOpenChange, onCartUpdate }: CartDrawerProps
     router.push("/cart")
   }
 
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
+  const subtotal = cartItconvertToUserCurrency(item.product.price, item.product.currency) * item.quantity,
     0
   )
+  const shipping = subtotal > 0 ? convertToUserCurrency(50, 'USD')
   const shipping = subtotal > 0 ? 50 : 0
   const total = subtotal + shipping
 
@@ -198,7 +200,7 @@ export function CartDrawer({ open, onOpenChange, onCartUpdate }: CartDrawerProps
                       </h4>
                       <div className="flex items-baseline gap-2">
                         <p className="text-lg text-primary font-bold">
-                          {item.product.currency} {item.product.price.toFixed(2)}
+                          {formatPrice(item.product.price, item.product.currency)}
                         </p>
                         <span className="text-xs text-muted-foreground">per {item.product.unit}</span>
                       </div>
@@ -239,7 +241,7 @@ export function CartDrawer({ open, onOpenChange, onCartUpdate }: CartDrawerProps
                     </div>
                     <div className="text-right flex flex-col justify-between">
                       <p className="text-base font-bold">
-                        {item.product.currency} {(item.product.price * item.quantity).toFixed(2)}
+                        {formatPrice(item.product.price * item.quantity, item.product.currency)}
                       </p>
                     </div>
                   </div>
@@ -252,20 +254,20 @@ export function CartDrawer({ open, onOpenChange, onCartUpdate }: CartDrawerProps
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">{t("cart.subtotal")}</span>
                   <span className="font-semibold">
-                    {cartItems[0]?.product.currency || "USD"} {subtotal.toFixed(2)}
+                    {formatPrice(subtotal, userCurrency)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">{t("cart.shipping")}</span>
                   <span className="font-semibold">
-                    {cartItems[0]?.product.currency || "USD"} {shipping.toFixed(2)}
+                    {formatPrice(shipping, userCurrency)}
                   </span>
                 </div>
                 <Separator className="my-2" />
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-bold">{t("cart.grandTotal")}</span>
                   <span className="text-xl font-bold text-primary">
-                    {cartItems[0]?.product.currency || "USD"} {total.toFixed(2)}
+                    {formatPrice(total, userCurrency)}
                   </span>
                 </div>
               </div>

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useLocale } from "@/lib/locale-context"
+import { useCurrency } from "@/hooks/use-currency"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -44,6 +45,7 @@ export function ShopContent() {
   const { data: session } = useSession()
   const router = useRouter()
   const { t } = useLocale()
+  const { formatPrice } = useCurrency()
   const { toast } = useToast()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -175,7 +177,7 @@ export function ShopContent() {
                   <CardFooter className="flex flex-col gap-2">
                     <div className="flex justify-between items-center w-full">
                       <span className="text-2xl font-bold text-primary">
-                        {product.currency} {product.price.toFixed(2)}
+                        {formatPrice(product.price, product.currency)}
                       </span>
                       <span className="text-sm text-muted-foreground">
                         /{product.unit}
@@ -276,7 +278,7 @@ export function ShopContent() {
                   <div className="flex justify-between items-center">
                     <div>
                       <span className="text-2xl font-bold text-primary">
-                        {product.currency} {product.price.toFixed(2)}
+                        {formatPrice(product.price, product.currency)}
                       </span>
                       <span className="text-sm text-muted-foreground ml-1">
                         /{product.unit}
