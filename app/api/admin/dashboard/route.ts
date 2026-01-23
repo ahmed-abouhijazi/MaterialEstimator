@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
         user: {
           select: { name: true, email: true }
         },
-        items: {
+        orderItems: {
           select: { 
             quantity: true,
             product: {
