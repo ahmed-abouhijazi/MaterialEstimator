@@ -60,23 +60,11 @@ import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
 import Loading from "./loading"
 
-// Product categories
-const categories = [
-  { id: "CONCRETE", name: "Béton" },
-  { id: "STEEL", name: "Acier" },
-  { id: "WOOD", name: "Bois" },
-  { id: "INSULATION", name: "Isolation" },
-  { id: "ROOFING", name: "Toiture" },
-  { id: "PAINT", name: "Peinture" },
-  { id: "PLUMBING", name: "Plomberie" },
-  { id: "ELECTRICAL", name: "Électricité" },
-  { id: "FLOORING", name: "Revêtement de sol" },
-  { id: "OTHER", name: "Autre" },
-]
-
 const InventoryPage = () => {
   const [products, setProducts] = useState<any[]>([])
+  const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isStockDialogOpen, setIsStockDialogOpen] = useState(false)
@@ -87,9 +75,21 @@ const InventoryPage = () => {
   const [imagePreview, setImagePreview] = useState<string>("")
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [formData, setFormData] = useState<any>({
+    name: "",
+    sku: "",
+    description: "",
+    price: 0,
+    unit: "",
+    category: "",
+    stock: 0,
+    minStock: 10,
+    maxStock: 1000,
+  })
 
   useEffect(() => {
     fetchProducts()
+    fetchCategories()
   }, [])
 
   const fetchProducts = async () => {
@@ -106,6 +106,19 @@ const InventoryPage = () => {
     }
   }
 
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('/api/admin/products')
+      if (!response.ok) return
+      const data = await response.json()
+      // Extract unique categories from products
+      const uniqueCategories = [...new Set(data.products.map((p: any) => p.category))]
+      setCategories(uniqueCategories as string[])
+    } catch (error) {
+      console.error('Error fetching categories:', error)
+    }
+  }
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -119,7 +132,54 @@ const InventoryPage = () => {
   }
 
   const removeImage = () => {
-    setImageFile(null)
+   
+
+  const handleSaveProduct = async (isEdit: boolean = false) => {
+    try {
+      setSaving(true)
+      let imageUrl = isEdit ? selectedProduct?.imageUrl : ""
+      
+      // Convert image to base64 if a new file is selected
+      if (imageFile) {
+        imageUrl = await convertImageToBase64(imageFile)
+      }
+
+      const productData = {
+        ...formData,
+        imageUrl,
+        price: parseFloat(formData.price),
+        stock: parseInt(formData.stock),
+        minStock: parseInt(formData.minStock),
+        maxStock: parseInt(formData.maxStock),
+      }
+
+      const url = isEdit ? `/api/admin/products?id=${selectedProduct?.id}` : '/api/admin/products'
+      const method = isEdit ? 'PATCH' : 'POST'
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData),
+      })
+
+      if (response.ok) {
+        await fetchProducts()
+        await fetchCategories()
+        if (isEdit) {
+          handleCloseEditDialog()
+        } else {
+          handleCloseAddDialog()
+        }
+      } else {
+        throw new Error('Failed to save product')
+      }
+    } catch (error) {
+      console.error('Error saving product:', error)
+      alert('Erreur lors de la sauvegarde du produit')
+    } finally {
+      setSaving(false)
+    }
+  } setImageFile(null)
     setImagePreview("")
   }
 
@@ -176,6 +236,17 @@ const InventoryPage = () => {
 
   const handleOpenEditDialog = (product: any) => {
     setSelectedProduct(product)
+    setFormData({
+      name: product.name,
+      sku: product.sku || "",
+      description: product.description,
+      price: product.price,
+      unit: product.unit,
+      category: product.category,
+      stock: product.stock,
+      minStock: product.minStock,
+      maxStock: product.maxStock,
+    })
     setImagePreview(product.imageUrl || "")
     setImageFile(null)
     setIsEditDialogOpen(true)
@@ -185,6 +256,17 @@ const InventoryPage = () => {
     setIsAddDialogOpen(false)
     setImagePreview("")
     setImageFile(null)
+    setFormData({
+      name: "",
+      sku: "",
+      description: "",
+      price: 0,
+      unit: "",
+      category: "",
+      stock: 0,
+      minStock: 10,
+      maxStock: 1000,
+    })
   }
 
   const handleCloseEditDialog = () => {
@@ -192,6 +274,17 @@ const InventoryPage = () => {
     setImagePreview("")
     setImageFile(null)
     setSelectedProduct(null)
+    setFormData({
+      name: "",
+      sku: "",
+      description: "",
+      price: 0,
+      unit: "",
+      category: "",
+      stock: 0,
+      minStock: 10,
+      maxStock: 1000,
+    })
   }
 
   return (
@@ -271,6 +364,8 @@ const InventoryPage = () => {
                   <div className="space-y-2">
                     <Label className="text-slate-300">Nom du produit</Label>
                     <Input
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
                       placeholder="Ex: Ciment Portland CEM I"
                       className="bg-slate-800/50 border-slate-700 text-white"
                     />
@@ -278,6 +373,8 @@ const InventoryPage = () => {
                   <div className="space-y-2">
                     <Label className="text-slate-300">SKU</Label>
                     <Input
+                      value={formData.sku}
+                      onChange={(e) => setFormData({...formData, sku: e.target.value})}
                       placeholder="Ex: CIM-001"
                       className="bg-slate-800/50 border-slate-700 text-white"
                     />
@@ -286,6 +383,8 @@ const InventoryPage = () => {
                 <div className="space-y-2">
                   <Label className="text-slate-300">Description</Label>
                   <Textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
                     placeholder="Description du produit..."
                     className="bg-slate-800/50 border-slate-700 text-white resize-none"
                   />
@@ -295,6 +394,8 @@ const InventoryPage = () => {
                     <Label className="text-slate-300">Prix (MAD)</Label>
                     <Input
                       type="number"
+                      value={formData.price}
+                      onChange={(e) => setFormData({...formData, price: e.target.value})}
                       placeholder="0.00"
                       className="bg-slate-800/50 border-slate-700 text-white"
                     />
@@ -302,20 +403,22 @@ const InventoryPage = () => {
                   <div className="space-y-2">
                     <Label className="text-slate-300">Unité</Label>
                     <Input
+                      value={formData.unit}
+                      onChange={(e) => setFormData({...formData, unit: e.target.value})}
                       placeholder="Ex: sac 50kg"
                       className="bg-slate-800/50 border-slate-700 text-white"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-slate-300">Catégorie</Label>
-                    <Select>
+                    <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
                       <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
                         <SelectValue placeholder="Sélectionner" />
                       </SelectTrigger>
                       <SelectContent className="bg-slate-900 border-slate-800">
                         {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.id} className="text-white focus:bg-slate-800">
-                            {cat.name}
+                          <SelectItem key={cat} value={cat} className="text-white focus:bg-slate-800">
+                            {cat}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -327,6 +430,8 @@ const InventoryPage = () => {
                     <Label className="text-slate-300">Stock initial</Label>
                     <Input
                       type="number"
+                      value={formData.stock}
+                      onChange={(e) => setFormData({...formData, stock: e.target.value})}
                       placeholder="0"
                       className="bg-slate-800/50 border-slate-700 text-white"
                     />
@@ -335,6 +440,8 @@ const InventoryPage = () => {
                     <Label className="text-slate-300">Stock minimum</Label>
                     <Input
                       type="number"
+                      value={formData.minStock}
+                      onChange={(e) => setFormData({...formData, minStock: e.target.value})}
                       placeholder="5"
                       className="bg-slate-800/50 border-slate-700 text-white"
                     />
@@ -343,6 +450,8 @@ const InventoryPage = () => {
                     <Label className="text-slate-300">Stock maximum</Label>
                     <Input
                       type="number"
+                      value={formData.maxStock}
+                      onChange={(e) => setFormData({...formData, maxStock: e.target.value})}
                       placeholder="100"
                       className="bg-slate-800/50 border-slate-700 text-white"
                     />
@@ -353,7 +462,12 @@ const InventoryPage = () => {
                 <Button variant="outline" onClick={handleCloseAddDialog} className="border-slate-700 text-slate-300 hover:bg-slate-800">
                   Annuler
                 </Button>
-                <Button className="bg-gradient-to-r from-amber-500 to-orange-600 text-white">
+                <Button 
+                  onClick={() => handleSaveProduct(false)} 
+                  disabled={saving}
+                  className="bg-gradient-to-r from-amber-500 to-orange-600 text-white"
+                >
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                   Ajouter le produit
                 </Button>
               </DialogFooter>
@@ -423,7 +537,8 @@ const InventoryPage = () => {
                   <div className="space-y-2">
                     <Label className="text-slate-300">Nom du produit</Label>
                     <Input
-                      defaultValue={selectedProduct?.name}
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
                       placeholder="Ex: Ciment Portland CEM I"
                       className="bg-slate-800/50 border-slate-700 text-white"
                     />
@@ -431,7 +546,8 @@ const InventoryPage = () => {
                   <div className="space-y-2">
                     <Label className="text-slate-300">SKU</Label>
                     <Input
-                      defaultValue={selectedProduct?.sku}
+                      value={formData.sku}
+                      onChange={(e) => setFormData({...formData, sku: e.target.value})}
                       placeholder="Ex: CIM-001"
                       className="bg-slate-800/50 border-slate-700 text-white"
                     />
@@ -440,7 +556,8 @@ const InventoryPage = () => {
                 <div className="space-y-2">
                   <Label className="text-slate-300">Description</Label>
                   <Textarea
-                    defaultValue={selectedProduct?.description}
+                    value={formData.description}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
                     placeholder="Description du produit..."
                     className="bg-slate-800/50 border-slate-700 text-white resize-none"
                   />
@@ -450,7 +567,8 @@ const InventoryPage = () => {
                     <Label className="text-slate-300">Prix (MAD)</Label>
                     <Input
                       type="number"
-                      defaultValue={selectedProduct?.price}
+                      value={formData.price}
+                      onChange={(e) => setFormData({...formData, price: e.target.value})}
                       placeholder="0.00"
                       className="bg-slate-800/50 border-slate-700 text-white"
                     />
@@ -458,21 +576,22 @@ const InventoryPage = () => {
                   <div className="space-y-2">
                     <Label className="text-slate-300">Unité</Label>
                     <Input
-                      defaultValue={selectedProduct?.unit}
+                      value={formData.unit}
+                      onChange={(e) => setFormData({...formData, unit: e.target.value})}
                       placeholder="Ex: sac 50kg"
                       className="bg-slate-800/50 border-slate-700 text-white"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-slate-300">Catégorie</Label>
-                    <Select defaultValue={selectedProduct?.category}>
+                    <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
                       <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
                         <SelectValue placeholder="Sélectionner" />
                       </SelectTrigger>
                       <SelectContent className="bg-slate-900 border-slate-800">
                         {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.id} className="text-white focus:bg-slate-800">
-                            {cat.name}
+                          <SelectItem key={cat} value={cat} className="text-white focus:bg-slate-800">
+                            {cat}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -484,7 +603,8 @@ const InventoryPage = () => {
                     <Label className="text-slate-300">Stock actuel</Label>
                     <Input
                       type="number"
-                      defaultValue={selectedProduct?.stock}
+                      value={formData.stock}
+                      onChange={(e) => setFormData({...formData, stock: e.target.value})}
                       placeholder="0"
                       className="bg-slate-800/50 border-slate-700 text-white"
                     />
@@ -493,7 +613,8 @@ const InventoryPage = () => {
                     <Label className="text-slate-300">Stock minimum</Label>
                     <Input
                       type="number"
-                      defaultValue={selectedProduct?.minStock}
+                      value={formData.minStock}
+                      onChange={(e) => setFormData({...formData, minStock: e.target.value})}
                       placeholder="5"
                       className="bg-slate-800/50 border-slate-700 text-white"
                     />
@@ -502,7 +623,8 @@ const InventoryPage = () => {
                     <Label className="text-slate-300">Stock maximum</Label>
                     <Input
                       type="number"
-                      defaultValue={selectedProduct?.maxStock}
+                      value={formData.maxStock}
+                      onChange={(e) => setFormData({...formData, maxStock: e.target.value})}
                       placeholder="100"
                       className="bg-slate-800/50 border-slate-700 text-white"
                     />
@@ -513,7 +635,12 @@ const InventoryPage = () => {
                 <Button variant="outline" onClick={handleCloseEditDialog} className="border-slate-700 text-slate-300 hover:bg-slate-800">
                   Annuler
                 </Button>
-                <Button className="bg-gradient-to-r from-amber-500 to-orange-600 text-white">
+                <Button 
+                  onClick={() => handleSaveProduct(true)} 
+                  disabled={saving}
+                  className="bg-gradient-to-r from-amber-500 to-orange-600 text-white"
+                >
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                   Enregistrer les modifications
                 </Button>
               </DialogFooter>

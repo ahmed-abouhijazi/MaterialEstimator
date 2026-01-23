@@ -14,15 +14,48 @@ export function SettingsContent() {
   const { data: session } = useSession()
   const { locale, currency, country, setLocale, setCurrency, setCountry, t } = useLocale()
   const [isLoading, setIsLoading] = useState(false)
+  const [isFetching, setIsFetching] = useState(true)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   
   const [formData, setFormData] = useState({
-    name: session?.user?.name || '',
-    email: session?.user?.email || '',
-    language: locale,
-    currency: currency,
-    country: country,
+    name: '',
+    email: '',
+    language: 'en',
+    currency: 'USD',
+    country: 'US',
   })
+
+  // Fetch user profile data
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!session?.user) return
+      
+      try {
+        setIsFetching(true)
+        const response = await fetch('/api/user/preferences')
+        if (response.ok) {
+          const data = await response.json()
+          setFormData({
+            name: session.user.name || '',
+            email: session.user.email || '',
+            language: data.preferredLanguage || locale,
+            currency: data.preferredCurrency || currency,
+            country: data.preferredCountry || country,
+          })
+          // Update context with fetched data
+          setLocale(data.preferredLanguage || locale)
+          setCurrency(data.preferredCurrency || currency)
+          setCountry(data.preferredCountry || country)
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error)
+      } finally {
+        setIsFetching(false)
+      }
+    }
+
+    fetchUserProfile()
+  }, [session])
 
   useEffect(() => {
     if (session?.user) {
