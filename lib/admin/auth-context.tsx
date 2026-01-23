@@ -93,3 +93,8 @@ export function useAuth() {
   }
   return context
 }
+
+export function useAuthSafe() {
+  const context = useContext(AuthContext)
+  return context
+}

@@ -1,7 +1,6 @@
 "use client"
 
 import React from "react"
-
 import { useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { AuthProvider, useAuth } from "@/lib/admin/auth-context"
@@ -31,7 +30,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
   // Login page doesn't need sidebar
   if (isLoginPage) {
-    return <>{children}</>
+    return <div className="min-h-screen bg-slate-950">{children}</div>
   }
 
   // Redirect if not authenticated
