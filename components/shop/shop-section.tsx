@@ -8,8 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ShoppingCart, Search, Package, Star, TrendingUp, Zap } from "lucide-react"
+import { ShoppingCart, Search, Package, Star, TrendingUp, Zap, Hammer, Wrench, Droplet, Paintbrush, Settings } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import Image from "next/image"
 
@@ -28,16 +27,16 @@ interface Product {
 }
 
 const categories = [
-  { value: "all", label: "All Products", icon: Package },
-  { value: "featured", label: "Featured", icon: Star },
-  { value: "cement", label: "Cement", icon: Package },
-  { value: "steel", label: "Steel & Rebar", icon: Package },
-  { value: "wood", label: "Wood", icon: Package },
-  { value: "tools", label: "Tools", icon: Package },
-  { value: "equipment", label: "Equipment", icon: Package },
-  { value: "pipes", label: "Pipes", icon: Package },
-  { value: "wiring", label: "Wiring", icon: Zap },
-  { value: "paint", label: "Paint", icon: Package },
+  { value: "all", label: "All Categories", icon: Package, color: "bg-primary text-primary-foreground" },
+  { value: "featured", label: "Featured Products", icon: Star, color: "bg-background border-2 border-border" },
+  { value: "cement", label: "Cement", icon: Package, color: "bg-background border-2 border-border" },
+  { value: "steel", label: "Steel & Rebar", icon: Settings, color: "bg-background border-2 border-border" },
+  { value: "wood", label: "Wood & Lumber", icon: Package, color: "bg-background border-2 border-border" },
+  { value: "tools", label: "Tools", icon: Hammer, color: "bg-background border-2 border-border" },
+  { value: "equipment", label: "Equipment", icon: Wrench, color: "bg-background border-2 border-border" },
+  { value: "pipes", label: "Pipes & Plumbing", icon: Droplet, color: "bg-background border-2 border-border" },
+  { value: "wiring", label: "Wiring & Electrical", icon: Zap, color: "bg-background border-2 border-border" },
+  { value: "paint", label: "Paint & Finishing", icon: Paintbrush, color: "bg-background border-2 border-border" },
 ]
 
 interface ShopSectionProps {
@@ -154,31 +153,43 @@ export function ShopSection({ onCartUpdate }: ShopSectionProps) {
           </div>
         </div>
 
-        {/* Category Tabs */}
-        <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
-          <TabsList className="w-full justify-start flex-wrap h-auto gap-2 bg-muted/50 p-2 mb-8">
+        {/* Category Navigation */}
+        <div className="mb-12">
+          <div className="flex flex-wrap gap-3 justify-center">
             {categories.map((cat) => {
               const Icon = cat.icon
+              const isActive = selectedCategory === cat.value
               return (
-                <TabsTrigger
+                <Button
                   key={cat.value}
-                  value={cat.value}
-                  className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  onClick={() => setSelectedCategory(cat.value)}
+                  variant={cat.value === "all" || isActive ? "default" : "outline"}
+                  className={`
+                    h-12 px-6 gap-2 text-sm font-medium transition-all
+                    ${cat.value === "all" 
+                      ? "bg-primary hover:bg-primary/90 text-primary-foreground" 
+                      : isActive 
+                        ? "bg-secondary hover:bg-secondary/90 text-secondary-foreground border-secondary" 
+                        : "bg-background hover:bg-muted border-2 border-border"
+                    }
+                  `}
                 >
                   <Icon className="h-4 w-4" />
                   {t(`shop.${cat.value === "featured" ? "featured" : cat.value === "all" ? "allCategories" : cat.value}`) || cat.label}
-                </TabsTrigger>
+                </Button>
               )
             })}
-          </TabsList>
+          </div>
+        </div>
 
-          <TabsContent value={selectedCategory} className="mt-0">
-            {loading ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">{t("shop.loadingProducts")}</p>
-              </div>
-            ) : selectedCategory === "all" && searchQuery === "" ? (
-              <>
+        {/* Products Content */}
+        <div>
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">{t("shop.loadingProducts")}</p>
+            </div>
+          ) : selectedCategory === "all" && searchQuery === "" ? (
+                <>
                 {/* Featured Products Section */}
                 {featuredProducts.length > 0 && (
                   <div className="mb-12">
@@ -362,8 +373,8 @@ export function ShopSection({ onCartUpdate }: ShopSectionProps) {
                 ))}
               </div>
             )}
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
       </div>
     </section>
   )
