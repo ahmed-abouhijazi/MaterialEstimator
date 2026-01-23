@@ -152,12 +152,34 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { productId, ...data } = await request.json()
+    const { searchParams } = new URL(request.url)
+    const productId = searchParams.get('id')
+
+    if (!productId) {
+      return NextResponse.json({ error: 'Product ID required' }, { status: 400 })
+    }
+
+    const data = await request.json()
 
     const product = await prisma.product.update({
       where: { id: productId },
       data: {
-        ...data,
+        name: data.name,
+        description: data.description,
+        category: data.category,
+        price: parseFloat(data.price),
+        currency: data.currency || 'USD',
+        unit: data.unit,
+        sku: data.sku || undefined,
+        barcode: data.barcode || null,
+        imageUrl: data.imageUrl || null,
+        stock: parseInt(data.stock),
+        minStock: parseInt(data.minStock),
+        maxStock: parseInt(data.maxStock),
+        brand: data.brand || null,
+        specifications: data.specifications || null,
+        isActive: data.isActive !== false,
+        featured: data.featured || false,
         updatedAt: new Date(),
       },
     })
