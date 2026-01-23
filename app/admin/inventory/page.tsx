@@ -60,6 +60,15 @@ import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
 import Loading from "./loading"
 
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("fr-MA", {
+    style: "currency",
+    currency: "MAD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)
+}
+
 const InventoryPage = () => {
   const [products, setProducts] = useState<any[]>([])
   const [categories, setCategories] = useState<string[]>([])
@@ -912,15 +921,6 @@ const InventoryPage = () => {
       </div>
     </Suspense>
   )
-}
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("fr-MA", {
-    style: "currency",
-    currency: "MAD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value)
 }
 
 export default InventoryPage
