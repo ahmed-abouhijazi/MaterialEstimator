@@ -1,19 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth.config'
+import { jwtVerify } from 'jose'
+
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.NEXTAUTH_SECRET || 'your-secret-key'
+)
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session || !session.user) {
+    // Check JWT authentication
+    const token = request.cookies.get('admin-token')?.value
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    let payload
+    try {
+      const verified = await jwtVerify(token, JWT_SECRET)
+      payload = verified.payload
+    } catch {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
     // Check if user is admin
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email! },
+      where: { id: payload.userId as string },
       select: { role: true }
     })
 
