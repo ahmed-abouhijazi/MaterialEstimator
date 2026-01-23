@@ -373,8 +373,8 @@ export default function UsersPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className={roleConfig[user.role].className}>
-                          {roleConfig[user.role].label}
+                        <Badge variant="secondary" className={(roleConfig[user.role as UserRole] || roleConfig.CUSTOMER).className}>
+                          {(roleConfig[user.role as UserRole] || roleConfig.CUSTOMER).label}
                         </Badge>
                       </TableCell>
                       <TableCell>

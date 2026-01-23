@@ -69,19 +69,19 @@ const formatCurrency = (value: number) => {
 }
 
 const statusConfig: Record<OrderStatus, { label: string; className: string; icon: typeof Clock }> = {
-  PENDING: { label: "En attente", className: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20", icon: Clock },
-  CONFIRMED: { label: "Confirmée", className: "bg-blue-500/10 text-blue-400 border-blue-500/20", icon: CheckCircle },
-  PROCESSING: { label: "En préparation", className: "bg-purple-500/10 text-purple-400 border-purple-500/20", icon: Package },
-  SHIPPED: { label: "Expédiée", className: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20", icon: Truck },
-  DELIVERED: { label: "Livrée", className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", icon: CheckCircle },
-  CANCELLED: { label: "Annulée", className: "bg-red-500/10 text-red-400 border-red-500/20", icon: XCircle },
+  pending: { label: "En attente", className: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20", icon: Clock },
+  confirmed: { label: "Confirmée", className: "bg-blue-500/10 text-blue-400 border-blue-500/20", icon: CheckCircle },
+  processing: { label: "En préparation", className: "bg-purple-500/10 text-purple-400 border-purple-500/20", icon: Package },
+  shipped: { label: "Expédiée", className: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20", icon: Truck },
+  delivered: { label: "Livrée", className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", icon: CheckCircle },
+  cancelled: { label: "Annulée", className: "bg-red-500/10 text-red-400 border-red-500/20", icon: XCircle },
 }
 
 const paymentStatusConfig = {
-  PENDING: { label: "En attente", className: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" },
-  PAID: { label: "Payée", className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
-  FAILED: { label: "Échouée", className: "bg-red-500/10 text-red-400 border-red-500/20" },
-  REFUNDED: { label: "Remboursée", className: "bg-slate-500/10 text-slate-400 border-slate-500/20" },
+  pending: { label: "En attente", className: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" },
+  paid: { label: "Payée", className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
+  failed: { label: "Échouée", className: "bg-red-500/10 text-red-400 border-red-500/20" },
+  refunded: { label: "Remboursée", className: "bg-slate-500/10 text-slate-400 border-slate-500/20" },
 }
 
 const Loading = () => null;
@@ -266,7 +266,8 @@ export default function OrdersPage() {
                 </TableHeader>
                 <TableBody>
                   {filteredOrders.map((order) => {
-                    const StatusIcon = statusConfig[order.status].icon
+                    const statusInfo = statusConfig[order.status as OrderStatus] || statusConfig.pending
+                    const StatusIcon = statusInfo.icon
                     return (
                       <TableRow key={order.id} className="border-slate-800 hover:bg-slate-800/30">
                         <TableCell>
@@ -297,14 +298,14 @@ export default function OrdersPage() {
                           {format(order.createdAt, "dd MMM yyyy", { locale: fr })}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="secondary" className={statusConfig[order.status].className}>
+                          <Badge variant="secondary" className={statusInfo.className}>
                             <StatusIcon className="h-3 w-3 mr-1" />
-                            {statusConfig[order.status].label}
+                            {statusInfo.label}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="secondary" className={paymentStatusConfig[order.paymentStatus].className}>
-                            {paymentStatusConfig[order.paymentStatus].label}
+                          <Badge variant="secondary" className={(paymentStatusConfig[order.paymentStatus as keyof typeof paymentStatusConfig] || paymentStatusConfig.pending).className}>
+                            {(paymentStatusConfig[order.paymentStatus as keyof typeof paymentStatusConfig] || paymentStatusConfig.pending).label}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-white font-medium">{formatCurrency(order.total)}</TableCell>
@@ -384,11 +385,11 @@ export default function OrdersPage() {
                 {/* Status & Date */}
                 <div className="flex items-center justify-between p-4 rounded-lg bg-slate-800/50">
                   <div className="flex items-center gap-3">
-                    <Badge variant="secondary" className={statusConfig[selectedOrder.status].className}>
-                      {statusConfig[selectedOrder.status].label}
+                    <Badge variant="secondary" className={(statusConfig[selectedOrder.status as OrderStatus] || statusConfig.pending).className}>
+                      {(statusConfig[selectedOrder.status as OrderStatus] || statusConfig.pending).label}
                     </Badge>
-                    <Badge variant="secondary" className={paymentStatusConfig[selectedOrder.paymentStatus].className}>
-                      {paymentStatusConfig[selectedOrder.paymentStatus].label}
+                    <Badge variant="secondary" className={(paymentStatusConfig[selectedOrder.paymentStatus as keyof typeof paymentStatusConfig] || paymentStatusConfig.pending).className}>
+                      {(paymentStatusConfig[selectedOrder.paymentStatus as keyof typeof paymentStatusConfig] || paymentStatusConfig.pending).label}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-slate-400">
