@@ -126,7 +126,14 @@
   },
   "estimator": {
     "title": "Material Estimator",
-    "calculate": "Calculate your material needs and costs",
+    "subtitle": "Get accurate material lists and cost estimates for your construction project",
+    "calculate": "Calculate Estimate",
+    "calculating": "Calculating...",
+    "previous": "Previous",
+    "next": "Next",
+    "selectProjectType": "Choose what you want to build",
+    "enterDimensions": "Enter the dimensions of your project",
+    "locationDescription": "Choose your location and material quality for accurate pricing",
     "projectName": "Project Name",
     "projectType": "Project Type",
     "location": "Location",
@@ -140,8 +147,6 @@
     "selectRegion": "Select region",
     "qualityLevel": "Quality Level",
     "estimationMode": "Estimation Mode",
-    "calculate": "Calculate Estimate",
-    "calculating": "Calculating...",
     "projectTypes": {
       "house": "Full House",
       "houseDesc": "Complete residential construction",
@@ -167,6 +172,7 @@
       "premiumDesc": "High-end materials"
     },
     "estimationModes": {
+      "description": "Choose the level of detail for your estimate",
       "simple": "Simple",
       "simpleDesc": "Essential materials only - quick estimate",
       "advanced": "Advanced",

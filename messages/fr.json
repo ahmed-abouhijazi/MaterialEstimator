@@ -125,8 +125,15 @@
     }
   },
   "estimator": {
-    "title": "Estimateur de matériaux",
-    "calculate": "Calculez vos besoins en matériaux et vos coûts",
+    "title": "Estimateur de Matériaux",
+    "subtitle": "Obtenez des listes de matériaux précises et des estimations de coûts pour votre projet de construction",
+    "calculate": "Calculer l'Estimation",
+    "calculating": "Calcul en cours...",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "selectProjectType": "Choisissez ce que vous voulez construire",
+    "enterDimensions": "Entrez les dimensions de votre projet",
+    "locationDescription": "Choisissez votre emplacement et la qualité des matériaux pour une tarification précise",
     "projectName": "Nom du projet",
     "projectType": "Type de projet",
     "location": "Emplacement",
@@ -140,8 +147,6 @@
     "selectRegion": "Sélectionner la région",
     "qualityLevel": "Niveau de qualité",
     "estimationMode": "Mode d'estimation",
-    "calculate": "Calculer l'estimation",
-    "calculating": "Calcul en cours...",
     "projectTypes": {
       "house": "Maison complète",
       "houseDesc": "Construction résidentielle complète",
@@ -167,6 +172,7 @@
       "premiumDesc": "Matériaux haut de gamme"
     },
     "estimationModes": {
+      "description": "Choisissez le niveau de détail pour votre estimation",
       "simple": "Simple",
       "simpleDesc": "Matériaux essentiels uniquement - estimation rapide",
       "advanced": "Avancé",
