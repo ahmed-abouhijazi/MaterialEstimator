@@ -7,6 +7,7 @@ import { useLocale } from "@/lib/locale-context"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Menu, X, HardHat, LogOut, User, Settings, ShoppingCart, Package } from "lucide-react"
+import { CartDrawer } from "@/components/cart/cart-drawer"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +20,7 @@ import { LanguageSwitcher } from "@/components/language-switcher"
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [cartCount, setCartCount] = useState(0)
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false)
   const { data: session } = useSession()
   const { t } = useLocale()
 
@@ -55,11 +57,11 @@ export function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden items-center gap-6 md:flex">
+          <Link href="/#shop" className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary">
+            {t('nav.shop')}
+          </Link>
           <Link href="/estimator" className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary">
             {t('nav.estimator')}
-          </Link>
-          <Link href="/shop" className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary">
-            {t('nav.shop')}
           </Link>
           <Link href="/dashboard" className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary">
             {t('nav.dashboard')}
@@ -74,16 +76,19 @@ export function Header() {
 
         <div className="hidden items-center gap-3 md:flex">
           <LanguageSwitcher />
-          <Link href="/cart" className="relative">
-            <Button variant="outline" size="icon" className="border-secondary text-secondary bg-transparent hover:bg-secondary hover:text-secondary-foreground">
-              <ShoppingCart className="h-5 w-5" />
-              {cartCount > 0 && (
-                <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 bg-primary text-primary-foreground text-xs">
-                  {cartCount}
-                </Badge>
-              )}
-            </Button>
-          </Link>
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="relative border-secondary text-secondary bg-transparent hover:bg-secondary hover:text-secondary-foreground"
+            onClick={() => setCartDrawerOpen(true)}
+          >
+            <ShoppingCart className="h-5 w-5" />
+            {cartCount > 0 && (
+              <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 bg-primary text-primary-foreground text-xs">
+                {cartCount}
+              </Badge>
+            )}
+          </Button>
           {session ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -159,16 +164,19 @@ export function Header() {
               {t('nav.estimator')}
             </Link>
             <Link
-              href="/shop"
+              href="#shop"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary"
               onClick={() => setMobileMenuOpen(false)}
             >
               {t('nav.shop')}
             </Link>
-            <Link
-              href="/cart"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary flex items-center gap-2"
-              onClick={() => setMobileMenuOpen(false)}
+            <Button
+              variant="ghost"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary flex items-center gap-2 justify-start px-0"
+              onClick={() => {
+                setMobileMenuOpen(false)
+                setCartDrawerOpen(true)
+              }}
             >
               <ShoppingCart className="h-4 w-4" />
               {t('nav.cart')}
@@ -177,7 +185,7 @@ export function Header() {
                   {cartCount}
                 </Badge>
               )}
-            </Link>
+            </Button>
             <Link
               href="/dashboard"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary"
@@ -241,6 +249,12 @@ export function Header() {
           </nav>
         </div>
       )}
+
+      <CartDrawer 
+        open={cartDrawerOpen} 
+        onOpenChange={setCartDrawerOpen}
+        onCartUpdate={fetchCartCount}
+      />
     </header>
   )
 }

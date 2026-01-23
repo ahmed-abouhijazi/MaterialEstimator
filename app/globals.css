@@ -3,6 +3,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   /* Construction-themed color palette - Warm cream background with navy & coral accents */
   --background: oklch(0.97 0.01 85);
