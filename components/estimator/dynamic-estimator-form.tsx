@@ -158,7 +158,7 @@ export function DynamicEstimatorForm() {
     <Card className="border-2 border-border shadow-lg">
       <CardHeader className="space-y-3">
         <CardTitle className="text-2xl md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>
-          {t('steps.mode')}
+          {t('estimator.steps.mode')}
         </CardTitle>
         <CardDescription className="text-base">
           {t('estimator.estimationModes.description') || 'Choose the level of detail for your estimate'}
@@ -226,7 +226,7 @@ export function DynamicEstimatorForm() {
     <Card className="border-2 border-border shadow-lg">
       <CardHeader className="space-y-3">
         <CardTitle className="text-2xl md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>
-          {t('steps.projectType')}
+          {t('estimator.steps.projectType')}
         </CardTitle>
         <CardDescription className="text-base">
           {t('estimator.selectProjectType') || 'Choose what you want to build'}
@@ -721,7 +721,7 @@ export function DynamicEstimatorForm() {
     <Card className="border-2 border-border shadow-lg">
       <CardHeader className="space-y-3">
         <CardTitle className="text-2xl md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>
-          {t('steps.location')}
+          {t('estimator.steps.location')}
         </CardTitle>
         <CardDescription className="text-base">
           {t('estimator.locationDescription') || 'Choose your location and material quality for accurate pricing'}
