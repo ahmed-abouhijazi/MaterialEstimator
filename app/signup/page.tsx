@@ -24,6 +24,7 @@ export default function SignupPage() {
     confirmPassword: "",
   })
   const [showVerificationMessage, setShowVerificationMessage] = useState(false)
+  const [isDevelopmentMode, setIsDevelopmentMode] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -59,7 +60,21 @@ export default function SignupPage() {
         throw new Error(data.error || 'Failed to create account')
       }
 
-      // Show verification message instead of auto-login
+      // Check if in development mode (auto-verified)
+      if (data.developmentMode || data.user?.emailVerified) {
+        setIsDevelopmentMode(true)
+        // Auto-login in development mode
+        setTimeout(async () => {
+          await signIn('credentials', {
+            email: formData.email,
+            password: formData.password,
+            redirect: false,
+          })
+          router.push('/dashboard')
+        }, 1500)
+      }
+
+      // Show verification message
       setShowVerificationMessage(true)
     } catch (err: any) {
       setError(err.message || 'An error occurred')
@@ -75,20 +90,35 @@ export default function SignupPage() {
           <Card className="border-2 border-green-200 bg-green-50">
             <CardContent className="pt-8 pb-8 text-center">
               <CheckCircle className="h-16 w-16 mx-auto text-green-600 mb-4" />
-              <h2 className="text-2xl font-bold mb-2 text-green-700">Check Your Email! 📧</h2>
-              <p className="text-muted-foreground mb-4">
-                We've sent a verification link to <strong>{formData.email}</strong>
-              </p>
-              <p className="text-sm text-muted-foreground mb-6">
-                Please click the link in the email to verify your account and start using BuildCalc Pro.
-              </p>
-              <div className="flex gap-2 justify-center">
-                <Link href="/login">
-                  <Button className="bg-primary text-primary-foreground">
-                    Go to Login
-                  </Button>
-                </Link>
-              </div>
+              {isDevelopmentMode ? (
+                <>
+                  <h2 className="text-2xl font-bold mb-2 text-green-700">Account Created! 🎉</h2>
+                  <p className="text-muted-foreground mb-4">
+                    Your account for <strong>{formData.email}</strong> has been created and verified.
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Redirecting you to the dashboard...
+                  </p>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-2xl font-bold mb-2 text-green-700">Check Your Email! 📧</h2>
+                  <p className="text-muted-foreground mb-4">
+                    We've sent a verification link to <strong>{formData.email}</strong>
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Please click the link in the email to verify your account and start using BuildCalc Pro.
+                  </p>
+                  <div className="flex gap-2 justify-center">
+                    <Link href="/login">
+                      <Button className="bg-primary text-primary-foreground">
+                        Go to Login
+                      </Button>
+                    </Link>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>

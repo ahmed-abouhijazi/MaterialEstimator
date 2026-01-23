@@ -35,34 +35,45 @@ export async function POST(request: NextRequest) {
     const verificationToken = crypto.randomBytes(32).toString('hex')
     const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
-    // Create user (not verified yet)
+    // Check if in development mode (no email domain configured)
+    const isDevelopmentMode = process.env.SKIP_EMAIL_VERIFICATION === 'true' || !process.env.RESEND_FROM_EMAIL
+
+    // Create user (auto-verify in development mode)
     const user = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
-        emailVerified: null,
+        emailVerified: isDevelopmentMode ? new Date() : null, // Auto-verify in dev mode
       },
     })
 
-    // Create verification token
-    await prisma.verificationToken.create({
-      data: {
-        identifier: email,
-        token: verificationToken,
-        expires: tokenExpiry,
-      }
-    })
+    // Only create verification token if not in development mode
+    if (!isDevelopmentMode) {
+      await prisma.verificationToken.create({
+        data: {
+          identifier: email,
+          token: verificationToken,
+          expires: tokenExpiry,
+        }
+      })
+    }
 
-    // Send verification email
-    await sendVerificationEmail(email, verificationToken)
+    // Send verification email (will be logged in console in dev mode)
+    const emailResult = await sendVerificationEmail(email, verificationToken)
+
+    const message = isDevelopmentMode 
+      ? '🎉 Account created and auto-verified! You can now log in.' 
+      : 'Account created! Please check your email to verify your account.'
 
     return NextResponse.json({
-      message: 'Account created! Please check your email to verify your account.',
+      message,
+      developmentMode: isDevelopmentMode,
       user: {
         id: user.id,
         name: user.name,
         email: user.email,
+        emailVerified: user.emailVerified,
       },
     })
   } catch (error) {

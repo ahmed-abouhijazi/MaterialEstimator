@@ -5,8 +5,20 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 // Use custom domain if configured, otherwise fall back to resend.dev (testing only)
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'BuildCalc Pro <onboarding@resend.dev>'
 
+// Development mode - skip email verification if no domain configured
+const isDevelopmentMode = process.env.SKIP_EMAIL_VERIFICATION === 'true' || !process.env.RESEND_FROM_EMAIL
+
 export async function sendVerificationEmail(email: string, token: string) {
   const verificationUrl = `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`
+
+  // In development mode, log the verification URL instead of sending email
+  if (isDevelopmentMode) {
+    console.log('\n🔧 DEVELOPMENT MODE - Email Verification Bypassed')
+    console.log('📧 To:', email)
+    console.log('🔗 Verification URL:', verificationUrl)
+    console.log('💡 User will be auto-verified on signup\n')
+    return { success: true, developmentMode: true }
+  }
 
   try {
     await resend.emails.send({
@@ -68,6 +80,12 @@ export async function sendVerificationEmail(email: string, token: string) {
 }
 
 export async function sendWelcomeEmail(email: string, name: string) {
+  // In development mode, just log instead of sending
+  if (isDevelopmentMode) {
+    console.log(`\n🎉 Welcome email would be sent to: ${email} (${name})`)
+    return { success: true, developmentMode: true }
+  }
+
   try {
     await resend.emails.send({
       from: FROM_EMAIL,
