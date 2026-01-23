@@ -1,11 +1,12 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSession, signOut } from "next-auth/react"
 import { useLocale } from "@/lib/locale-context"
 import { Button } from "@/components/ui/button"
-import { Menu, X, HardHat, LogOut, User, Settings } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Menu, X, HardHat, LogOut, User, Settings, ShoppingCart, Package } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,8 +18,28 @@ import { LanguageSwitcher } from "@/components/language-switcher"
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [cartCount, setCartCount] = useState(0)
   const { data: session } = useSession()
   const { t } = useLocale()
+
+  useEffect(() => {
+    if (session) {
+      fetchCartCount()
+    }
+  }, [session])
+
+  const fetchCartCount = async () => {
+    try {
+      const response = await fetch("/api/cart")
+      if (response.ok) {
+        const data = await response.json()
+        const count = data.reduce((sum: number, item: any) => sum + item.quantity, 0)
+        setCartCount(count)
+      }
+    } catch (error) {
+      console.error("Error fetching cart count:", error)
+    }
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b-2 border-secondary bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -37,6 +58,9 @@ export function Header() {
           <Link href="/estimator" className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary">
             {t('nav.estimator')}
           </Link>
+          <Link href="/shop" className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary">
+            {t('nav.shop')}
+          </Link>
           <Link href="/dashboard" className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary">
             {t('nav.dashboard')}
           </Link>
@@ -50,6 +74,16 @@ export function Header() {
 
         <div className="hidden items-center gap-3 md:flex">
           <LanguageSwitcher />
+          <Link href="/cart" className="relative">
+            <Button variant="outline" size="icon" className="border-secondary text-secondary bg-transparent hover:bg-secondary hover:text-secondary-foreground">
+              <ShoppingCart className="h-5 w-5" />
+              {cartCount > 0 && (
+                <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 bg-primary text-primary-foreground text-xs">
+                  {cartCount}
+                </Badge>
+              )}
+            </Button>
+          </Link>
           {session ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -66,6 +100,12 @@ export function Header() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/dashboard">{t('nav.dashboard')}</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/orders" className="flex items-center">
+                    <Package className="mr-2 h-4 w-4" />
+                    My Orders
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/settings" className="flex items-center">
@@ -119,6 +159,26 @@ export function Header() {
               {t('nav.estimator')}
             </Link>
             <Link
+              href="/shop"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {t('nav.shop')}
+            </Link>
+            <Link
+              href="/cart"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary flex items-center gap-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <ShoppingCart className="h-4 w-4" />
+              {t('nav.cart')}
+              {cartCount > 0 && (
+                <Badge className="bg-primary text-primary-foreground">
+                  {cartCount}
+                </Badge>
+              )}
+            </Link>
+            <Link
               href="/dashboard"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary"
               onClick={() => setMobileMenuOpen(false)}
@@ -146,6 +206,12 @@ export function Header() {
                     <p className="text-sm font-medium">{session.user?.name}</p>
                     <p className="text-xs text-muted-foreground">{session.user?.email}</p>
                   </div>
+                  <Link href="/orders" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full">
+                      <Package className="mr-2 h-4 w-4" />
+                      My Orders
+                    </Button>
+                  </Link>
                   <Link href="/settings" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="outline" className="w-full">
                       <Settings className="mr-2 h-4 w-4" />
