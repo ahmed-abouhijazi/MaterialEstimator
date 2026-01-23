@@ -87,6 +87,7 @@ export async function GET(request: NextRequest) {
     const usersChange = lastMonthUsers > 0 ? ((totalUsers - lastMonthUsers) / lastMonthUsers) * 100 : 0
 
     // Get revenue by month - simple aggregation without raw SQL
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1)
     const allOrders = await prisma.order.findMany({
       where: {
         createdAt: { gte: sixMonthsAgo }
@@ -180,13 +181,13 @@ export async function GET(request: NextRequest) {
         ordersChange: Math.round(ordersChange * 10) / 10,
         totalProducts,
         lowStockProducts,
-        totalUsers,Data,
-      lowStockProducts: lowStockProductsListnge * 10) / 10,
+        totalUsers,
+        usersChange: Math.round(usersChange * 10) / 10,
       },
       revenueData: revenueByMonth,
       topProducts: topProductDetails,
-      recentOrders: recentOrders,
-      lowStockProducts: lowStockProducts,
+      recentOrders: recentOrdersData,
+      lowStockProducts: lowStockProductsList,
     })
   } catch (error) {
     console.error('Dashboard stats error:', error)
