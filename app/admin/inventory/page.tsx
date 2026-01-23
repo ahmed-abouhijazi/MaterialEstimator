@@ -141,7 +141,9 @@ const InventoryPage = () => {
   }
 
   const removeImage = () => {
-   
+    setImageFile(null)
+    setImagePreview("")
+  }
 
   const handleSaveProduct = async (isEdit: boolean = false) => {
     try {
@@ -485,9 +487,10 @@ const InventoryPage = () => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+        </div>
 
-          {/* Edit Product Dialog */}
-          <Dialog open={isEditDialogOpen} onOpenChange={(open) => {
+        {/* Edit Product Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={(open) => {
             if (!open) handleCloseEditDialog()
             else setIsEditDialogOpen(true)
           }}>
@@ -658,7 +661,6 @@ const InventoryPage = () => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </div>
 
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-4">
@@ -738,8 +740,8 @@ const InventoryPage = () => {
                   <SelectContent className="bg-slate-900 border-slate-800">
                     <SelectItem value="all" className="text-white focus:bg-slate-800">Toutes les catégories</SelectItem>
                     {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id} className="text-white focus:bg-slate-800">
-                        {cat.name}
+                      <SelectItem key={cat} value={cat} className="text-white focus:bg-slate-800">
+                        {cat}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -809,7 +811,7 @@ const InventoryPage = () => {
                           </div>
                         </TableCell>
                         <TableCell className="text-slate-300 font-mono text-sm">{product.sku}</TableCell>
-                        <TableCell className="text-slate-300">{product.category?.name}</TableCell>
+                        <TableCell className="text-slate-300">{product.category}</TableCell>
                         <TableCell className="text-white font-medium">{formatCurrency(product.price)}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
