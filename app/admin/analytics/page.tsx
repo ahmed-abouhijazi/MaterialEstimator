@@ -25,8 +25,9 @@ import {
   BarChart3,
   PieChart,
   Activity,
+  Loader2,
 } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Area,
   AreaChart,
@@ -44,7 +45,6 @@ import {
   YAxis,
   Legend,
 } from "recharts"
-import { revenueData, topProducts, orders, products, categories } from "@/lib/admin/mock-data"
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("fr-MA", {
@@ -133,6 +133,71 @@ const kpis = [
 
 export default function AnalyticsPage() {
   const [period, setPeriod] = useState("6months")
+  const [loading, setLoading] = useState(true)
+  const [dashboardData, setDashboardData] = useState<any>(null)
+
+  useEffect(() => {
+    fetchAnalytics()
+  }, [])
+
+  const fetchAnalytics = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/admin/dashboard')
+      if (!response.ok) throw new Error('Failed to fetch analytics')
+      const data = await response.json()
+      setDashboardData(data)
+    } catch (error) {
+      console.error('Error fetching analytics:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+      </div>
+    )
+  }
+
+  if (!dashboardData) return null
+
+  const kpis = [
+    {
+      title: "Chiffre d'affaires",
+      value: formatCurrency(dashboardData.stats.totalRevenue),
+      change: dashboardData.stats.revenueChange,
+      changeLabel: "vs mois dernier",
+      icon: DollarSign,
+      color: "amber",
+    },
+    {
+      title: "Commandes",
+      value: dashboardData.stats.totalOrders.toString(),
+      change: dashboardData.stats.ordersChange,
+      changeLabel: "vs mois dernier",
+      icon: ShoppingCart,
+      color: "blue",
+    },
+    {
+      title: "Produits",
+      value: dashboardData.stats.totalProducts.toString(),
+      change: 0,
+      changeLabel: `${dashboardData.stats.lowStockProducts} stock faible`,
+      icon: Package,
+      color: "emerald",
+    },
+    {
+      title: "Clients",
+      value: dashboardData.stats.totalUsers.toString(),
+      change: dashboardData.stats.usersChange,
+      changeLabel: "vs mois dernier",
+      icon: Users,
+      color: "purple",
+    },
+  ]
 
   const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; name: string }>; label?: string }) => {
     if (active && payload && payload.length) {
@@ -243,7 +308,7 @@ export default function AnalyticsPage() {
               <CardContent className="overflow-hidden">
                 <div className="h-[300px] -mx-2">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={detailedRevenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <AreaChart data={dashboardData.revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
@@ -305,7 +370,7 @@ export default function AnalyticsPage() {
               <CardContent className="overflow-hidden">
                 <div className="h-[300px] -mx-2">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={detailedRevenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <LineChart data={dashboardData.revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                       <XAxis dataKey="month" stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} />
                       <YAxis stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} width={30} />
@@ -461,8 +526,8 @@ export default function AnalyticsPage() {
         </CardHeader>
         <CardContent className="overflow-hidden">
           <div className="space-y-4">
-            {topProducts.map((product, index) => {
-              const maxRevenue = Math.max(...topProducts.map((p) => p.revenue))
+            {dashboardData.topProducts.map((product: any, index: number) => {
+              const maxRevenue = Math.max(...dashboardData.topProducts.map((p: any) => p.revenue))
               const percentage = (product.revenue / maxRevenue) * 100
 
               return (

@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import { useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { AuthProvider, useAuth } from "@/lib/admin/auth-context"
@@ -12,6 +12,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const isLoginPage = pathname === "/admin/login"
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   useEffect(() => {
     if (!isLoading && !user && !isLoginPage) {
@@ -44,8 +45,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-slate-950 overflow-x-hidden">
-      <AdminSidebar />
-      <main className="lg:pl-64 transition-all duration-300">
+      <AdminSidebar collapsed={sidebarCollapsed} onCollapsedChange={setSidebarCollapsed} />
+      <main className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}>
         <div className="min-h-screen p-4 lg:p-8 overflow-hidden">
           {children}
         </div>

@@ -18,7 +18,6 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { useState } from "react"
 
 const navigation = [
   { name: "Tableau de bord", href: "/admin", icon: LayoutDashboard },
@@ -29,10 +28,9 @@ const navigation = [
   { name: "Paramètres", href: "/admin/settings", icon: Settings },
 ]
 
-export function AdminSidebar() {
+export function AdminSidebar({ collapsed, onCollapsedChange }: { collapsed: boolean, onCollapsedChange: (collapsed: boolean) => void }) {
   const pathname = usePathname()
   const { user, logout } = useAuth()
-  const [collapsed, setCollapsed] = useState(false)
 
   const getInitials = (name: string | null) => {
     if (!name) return "AD"
@@ -51,7 +49,7 @@ export function AdminSidebar() {
         variant="ghost"
         size="icon"
         className="fixed top-4 left-4 z-50 lg:hidden bg-slate-900 text-white hover:bg-slate-800"
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={() => onCollapsedChange(!collapsed)}
       >
         <Menu className="h-5 w-5" />
       </Button>
@@ -60,7 +58,7 @@ export function AdminSidebar() {
       {!collapsed && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setCollapsed(true)}
+          onClick={() => onCollapsedChange(true)}
         />
       )}
 
@@ -85,7 +83,7 @@ export function AdminSidebar() {
             variant="ghost"
             size="icon"
             className="ml-auto text-slate-400 hover:text-white hover:bg-slate-800 hidden lg:flex"
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={() => onCollapsedChange(!collapsed)}
           >
             <ChevronLeft className={cn("h-4 w-4 transition-transform", collapsed && "rotate-180")} />
           </Button>
@@ -105,7 +103,7 @@ export function AdminSidebar() {
                     ? "bg-gradient-to-r from-amber-500/10 to-orange-500/10 text-amber-500 border border-amber-500/20"
                     : "text-slate-400 hover:text-white hover:bg-slate-800"
                 )}
-                onClick={() => setCollapsed(true)}
+                onClick={() => onCollapsedChange(true)}
               >
                 <item.icon className={cn("h-5 w-5 shrink-0", isActive && "text-amber-500")} />
                 {!collapsed && <span>{item.name}</span>}

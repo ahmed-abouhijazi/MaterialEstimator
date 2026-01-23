@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -51,9 +51,9 @@ import {
   CreditCard,
   MapPin,
   Calendar,
+  Loader2,
 } from "lucide-react"
-import { orders } from "@/lib/admin/mock-data"
-import type { Order, OrderStatus } from "@/lib/admin/types"
+import type { OrderStatus } from "@/lib/admin/types"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import { useSearchParams } from "next/navigation"
@@ -88,10 +88,38 @@ const Loading = () => null;
 
 export default function OrdersPage() {
   const searchParams = useSearchParams();
+  const [orders, setOrders] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null)
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
+
+  useEffect(() => {
+    fetchOrders()
+  }, [])
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/admin/orders')
+      if (!response.ok) throw new Error('Failed to fetch orders')
+      const data = await response.json()
+      setOrders(data.orders || [])
+    } catch (error) {
+      console.error('Error fetching orders:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+      </div>
+    )
+  }
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
