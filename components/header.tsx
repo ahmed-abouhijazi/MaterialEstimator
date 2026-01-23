@@ -57,7 +57,7 @@ export function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden items-center gap-6 md:flex">
-          <Link href="/#shop" className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary">
+          <Link href="/shop" className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary">
             {t('nav.shop')}
           </Link>
           <Link href="/estimator" className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary">
@@ -164,7 +164,7 @@ export function Header() {
               {t('nav.estimator')}
             </Link>
             <Link
-              href="#shop"
+              href="/shop"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-secondary"
               onClick={() => setMobileMenuOpen(false)}
             >

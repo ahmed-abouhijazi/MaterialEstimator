@@ -125,7 +125,7 @@ export function ShopSection({ onCartUpdate }: ShopSectionProps) {
   const featuredProducts = products.filter((p) => p.featured && p.stock > 0).slice(0, 6)
 
   return (
-    <section className="py-16 bg-background" id="shop">
+    <section className="py-16 bg-background">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
