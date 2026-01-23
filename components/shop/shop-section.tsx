@@ -124,111 +124,95 @@ export function ShopSection({ onCartUpdate }: ShopSectionProps) {
   const featuredProducts = products.filter((p) => p.featured && p.stock > 0).slice(0, 6)
 
   return (
-    <section className="py-16 bg-gradient-to-b from-background to-muted/20">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
-            <ShoppingCart className="h-3 w-3 mr-1" />
-            Construction Materials Shop
-          </Badge>
-          <h2 className="text-4xl md:text-5xl font-bold text-secondary mb-4" style={{ fontFamily: 'var(--font-display)' }}>
+    <div className="min-h-screen">
+      {/* Hero Section with Search */}
+      <section className="bg-gradient-to-br from-[#1a2332] via-[#243447] to-[#1a2332] py-20 px-4">
+        <div className="container mx-auto max-w-5xl text-center">
+          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-6 border border-primary/20">
+            <Settings className="h-4 w-4" />
+            <span className="text-sm font-medium">Construction Materials Shop</span>
+          </div>
+          
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
             {t("shop.title")}
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          </h1>
+          
+          <p className="text-lg md:text-xl text-white/80 mb-10 max-w-3xl mx-auto">
             {t("shop.subtitle")}
           </p>
-        </div>
 
-        {/* Search Bar */}
-        <div className="max-w-3xl mx-auto mb-12">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          {/* Search Bar */}
+          <div className="relative max-w-3xl mx-auto">
+            <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
+              type="text"
               placeholder={t("shop.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-14 text-lg border-2 border-input focus:border-primary rounded-xl shadow-sm"
+              className="pl-14 pr-32 h-14 rounded-full text-base bg-white shadow-lg border-0"
             />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-          
-          {/* Stats Bar */}
-          <div className="flex items-center justify-center gap-6 mt-4 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Package className="h-4 w-4" />
-              {filteredProducts.length} products
-            </span>
-            {selectedCategory !== "all" && (
-              <span className="flex items-center gap-1 text-primary font-medium">
-                in {t(`shop.${selectedCategory}`) || selectedCategory}
-              </span>
-            )}
+            <Button
+              onClick={() => {}}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 px-6 rounded-full bg-primary hover:bg-primary/90"
+            >
+              {t("shop.searchButton")}
+            </Button>
           </div>
         </div>
+      </section>
 
-        {/* Category Navigation */}
-        <div className="mb-12">
-          <h3 className="text-lg font-semibold text-secondary mb-4 text-center">Browse by Category</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-6xl mx-auto">
+      {/* Categories Pills */}
+      <div className="bg-background border-b sticky top-0 z-10 shadow-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             {categories.map((cat) => {
               const Icon = cat.icon
               const isActive = selectedCategory === cat.value
-              const isAll = cat.value === "all"
+              const categoryLabel = t(`shop.categories.${cat.value}`)
+
               return (
                 <button
                   key={cat.value}
                   onClick={() => setSelectedCategory(cat.value)}
                   className={`
-                    group relative p-6 rounded-xl border-2 transition-all duration-300
-                    flex flex-col items-center gap-3 text-center
-                    ${isAll 
-                      ? "bg-primary border-primary text-primary-foreground shadow-lg" 
-                      : isActive 
-                        ? "bg-secondary border-secondary text-secondary-foreground shadow-lg scale-105" 
-                        : "bg-card border-border hover:border-primary/50 hover:shadow-md hover:scale-102"
+                    inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-medium transition-all duration-300
+                    ${isActive 
+                      ? "bg-primary text-primary-foreground shadow-md scale-105" 
+                      : "bg-muted/50 hover:bg-muted text-foreground hover:shadow-sm"
                     }
                   `}
                 >
-                  <div className={`
-                    p-3 rounded-lg transition-all
-                    ${isAll 
-                      ? "bg-primary-foreground/20" 
-                      : isActive 
-                        ? "bg-secondary-foreground/20" 
-                        : "bg-muted group-hover:bg-primary/10"
-                    }
-                  `}>
-                    <Icon className={`h-8 w-8 ${isAll || isActive ? "" : "text-primary"}`} />
-                  </div>
-                  <span className="text-sm font-semibold leading-tight">
-                    {t(`shop.${cat.value === "featured" ? "featured" : cat.value === "all" ? "allCategories" : cat.value}`) || cat.label}
-                  </span>
-                  {isActive && !isAll && (
-                    <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-1">
-                      <Star className="h-4 w-4 fill-current" />
-                    </div>
-                  )}
+                  <Icon className="h-4 w-4" />
+                  <span className="text-sm">{categoryLabel}</span>
                 </button>
               )
             })}
           </div>
         </div>
+      </div>
 
-        {/* Products Content */}
-        <div>
-          {loading ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">{t("shop.loadingProducts")}</p>
+      {/* Products Section */}
+      <section className="py-12 bg-gradient-to-b from-background to-muted/20">
+        <div className="container mx-auto px-4">
+          {/* Stats Bar */}
+          {searchQuery && (
+            <div className="flex items-center justify-center gap-6 mb-8 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <Package className="h-4 w-4" />
+                <span>
+                  {filteredProducts.length} {t("shop.productsFound")}
+                </span>
+              </div>
             </div>
-          ) : selectedCategory === "all" && searchQuery === "" ? (
+          )}
+
+          {/* Products Content */}
+          <div>
+            {loading ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">{t("shop.loadingProducts")}</p>
+              </div>
+            ) : selectedCategory === "all" && searchQuery === "" ? (
                 <>
                 {/* Featured Products Section */}
                 {featuredProducts.length > 0 && (
@@ -423,7 +407,7 @@ export function ShopSection({ onCartUpdate }: ShopSectionProps) {
             )}
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   )
 }

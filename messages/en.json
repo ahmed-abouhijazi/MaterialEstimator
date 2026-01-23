@@ -521,11 +521,26 @@
     }
   },
   "shop": {
-    "title": "Construction Materials Shop",
-    "subtitle": "Buy quality materials directly for your projects",
+    "title": "Quality Construction Materials",
+    "subtitle": "Buy professional materials directly for your projects. Fast delivery and competitive prices.",
     "searchPlaceholder": "Search products...",
+    "searchButton": "Search",
+    "productsFound": "products found",
+    "browseByCategory": "Browse by Category",
     "categories": "Categories",
     "allCategories": "All Categories",
+    "categories": {
+      "all": "All Categories",
+      "featured": "Featured Products",
+      "cement": "Cement",
+      "steel": "Steel & Rebar",
+      "wood": "Wood & Lumber",
+      "tools": "Tools",
+      "equipment": "Equipment",
+      "pipes": "Pipes & Plumbing",
+      "wiring": "Wiring & Electrical",
+      "paint": "Paint & Finishing"
+    },
     "cement": "Cement",
     "steel": "Steel & Rebar",
     "wood": "Wood & Lumber",
