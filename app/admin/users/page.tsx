@@ -75,6 +75,7 @@ function Loading() {
 }
 
 export default function UsersPage() {
+  const searchParams = useSearchParams()
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
@@ -136,8 +137,6 @@ export default function UsersPage() {
   const activeUsers = users.filter((u) => u.isActive).length
   const adminStaff = users.filter((u) => u.role !== "CUSTOMER").length
   const customers = users.filter((u) => u.role === "CUSTOMER").length
-
-  const searchParams = useSearchParams()
 
   return (
     <Suspense fallback={<Loading />}>
