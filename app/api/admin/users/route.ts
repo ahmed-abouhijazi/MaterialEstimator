@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
         emailVerified: true,
         createdAt: true,
         subscriptionStatus: true,
-        subscriptionEnd: true,
+        subscriptionEndDate: true,
         _count: {
           select: {
             orders: true
@@ -116,7 +116,7 @@ export async function PATCH(request: NextRequest) {
         emailVerified: true,
         createdAt: true,
         subscriptionStatus: true,
-        subscriptionEnd: true,
+        subscriptionEndDate: true,
       }
     })
 
