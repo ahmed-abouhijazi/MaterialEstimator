@@ -124,7 +124,7 @@ export function ShopSection({ onCartUpdate }: ShopSectionProps) {
   const featuredProducts = products.filter((p) => p.featured && p.stock > 0).slice(0, 6)
 
   return (
-    <section className="py-16 bg-background">
+    <section className="py-16 bg-gradient-to-b from-background to-muted/20">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
@@ -141,42 +141,82 @@ export function ShopSection({ onCartUpdate }: ShopSectionProps) {
         </div>
 
         {/* Search Bar */}
-        <div className="max-w-2xl mx-auto mb-8">
+        <div className="max-w-3xl mx-auto mb-12">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               placeholder={t("shop.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-14 text-lg border-2 border-input focus:border-primary"
+              className="pl-12 h-14 text-lg border-2 border-input focus:border-primary rounded-xl shadow-sm"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          
+          {/* Stats Bar */}
+          <div className="flex items-center justify-center gap-6 mt-4 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Package className="h-4 w-4" />
+              {filteredProducts.length} products
+            </span>
+            {selectedCategory !== "all" && (
+              <span className="flex items-center gap-1 text-primary font-medium">
+                in {t(`shop.${selectedCategory}`) || selectedCategory}
+              </span>
+            )}
           </div>
         </div>
 
         {/* Category Navigation */}
         <div className="mb-12">
-          <div className="flex flex-wrap gap-3 justify-center">
+          <h3 className="text-lg font-semibold text-secondary mb-4 text-center">Browse by Category</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-6xl mx-auto">
             {categories.map((cat) => {
               const Icon = cat.icon
               const isActive = selectedCategory === cat.value
+              const isAll = cat.value === "all"
               return (
-                <Button
+                <button
                   key={cat.value}
                   onClick={() => setSelectedCategory(cat.value)}
-                  variant={cat.value === "all" || isActive ? "default" : "outline"}
                   className={`
-                    h-12 px-6 gap-2 text-sm font-medium transition-all
-                    ${cat.value === "all" 
-                      ? "bg-primary hover:bg-primary/90 text-primary-foreground" 
+                    group relative p-6 rounded-xl border-2 transition-all duration-300
+                    flex flex-col items-center gap-3 text-center
+                    ${isAll 
+                      ? "bg-primary border-primary text-primary-foreground shadow-lg" 
                       : isActive 
-                        ? "bg-secondary hover:bg-secondary/90 text-secondary-foreground border-secondary" 
-                        : "bg-background hover:bg-muted border-2 border-border"
+                        ? "bg-secondary border-secondary text-secondary-foreground shadow-lg scale-105" 
+                        : "bg-card border-border hover:border-primary/50 hover:shadow-md hover:scale-102"
                     }
                   `}
                 >
-                  <Icon className="h-4 w-4" />
-                  {t(`shop.${cat.value === "featured" ? "featured" : cat.value === "all" ? "allCategories" : cat.value}`) || cat.label}
-                </Button>
+                  <div className={`
+                    p-3 rounded-lg transition-all
+                    ${isAll 
+                      ? "bg-primary-foreground/20" 
+                      : isActive 
+                        ? "bg-secondary-foreground/20" 
+                        : "bg-muted group-hover:bg-primary/10"
+                    }
+                  `}>
+                    <Icon className={`h-8 w-8 ${isAll || isActive ? "" : "text-primary"}`} />
+                  </div>
+                  <span className="text-sm font-semibold leading-tight">
+                    {t(`shop.${cat.value === "featured" ? "featured" : cat.value === "all" ? "allCategories" : cat.value}`) || cat.label}
+                  </span>
+                  {isActive && !isAll && (
+                    <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-1">
+                      <Star className="h-4 w-4 fill-current" />
+                    </div>
+                  )}
+                </button>
               )
             })}
           </div>
@@ -201,36 +241,40 @@ export function ShopSection({ onCartUpdate }: ShopSectionProps) {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
                       {featuredProducts.map((product) => (
-                        <Card key={product.id} className="border-2 border-primary/20 hover:shadow-xl transition-all hover:-translate-y-1">
-                          <CardHeader>
-                            <div className="relative h-48 w-full bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+                        <Card key={product.id} className="border-2 border-primary/30 hover:border-primary hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 overflow-hidden group">
+                          <CardHeader className="p-0">
+                            <div className="relative h-52 w-full bg-gradient-to-br from-primary/5 via-primary/10 to-secondary/5 flex items-center justify-center overflow-hidden">
                               {product.imageUrl ? (
                                 <Image
                                   src={product.imageUrl}
                                   alt={product.name}
                                   fill
-                                  className="object-cover"
+                                  className="object-cover group-hover:scale-110 transition-transform duration-300"
                                 />
                               ) : (
-                                <Package className="h-20 w-20 text-primary/40" />
+                                <Package className="h-20 w-20 text-primary/40 group-hover:scale-110 transition-transform" />
                               )}
-                              <Badge className="absolute top-2 right-2 bg-primary">
+                              <Badge className="absolute top-3 right-3 bg-primary shadow-lg">
                                 <Star className="h-3 w-3 mr-1 fill-current" />
                                 Featured
                               </Badge>
                             </div>
-                            {product.brand && (
-                              <Badge variant="outline" className="w-fit mb-2">
-                                {product.brand}
-                              </Badge>
-                            )}
-                            <CardTitle className="text-lg line-clamp-2">{product.name}</CardTitle>
-                            <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                              {product.description}
-                            </p>
+                            <div className="p-4">
+                              {product.brand && (
+                                <Badge variant="outline" className="mb-2 text-xs">
+                                  {product.brand}
+                                </Badge>
+                              )}
+                              <CardTitle className="text-lg line-clamp-2 group-hover:text-primary transition-colors">
+                                {product.name}
+                              </CardTitle>
+                              <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
+                                {product.description}
+                              </p>
+                            </div>
                           </CardHeader>
-                          <CardContent>
-                            <div className="flex items-end justify-between mb-3">
+                          <CardContent className="p-4 pt-0">
+                            <div className="flex items-end justify-between mb-4">
                               <div>
                                 <span className="text-3xl font-bold text-primary">
                                   {product.currency} {product.price.toFixed(2)}
@@ -239,12 +283,12 @@ export function ShopSection({ onCartUpdate }: ShopSectionProps) {
                                   /{product.unit}
                                 </span>
                               </div>
-                              <Badge variant="secondary" className="bg-green-100 text-green-700">
+                              <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
                                 {t("shop.inStock")}
                               </Badge>
                             </div>
                             <Button
-                              className="w-full bg-primary hover:bg-primary/90 h-11"
+                              className="w-full bg-primary hover:bg-primary/90 h-11 shadow-md hover:shadow-lg transition-all"
                               onClick={() => handleAddToCart(product.id)}
                               disabled={addingToCart === product.id}
                             >
@@ -267,28 +311,32 @@ export function ShopSection({ onCartUpdate }: ShopSectionProps) {
                 {/* All Products Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {products.filter(p => p.stock > 0).map((product) => (
-                    <Card key={product.id} className="border-2 border-border hover:shadow-lg transition-shadow">
-                      <CardHeader>
-                        <div className="relative h-40 w-full bg-muted rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+                    <Card key={product.id} className="border-2 border-border hover:border-primary/50 hover:shadow-lg transition-all duration-300 overflow-hidden group">
+                      <CardHeader className="p-0">
+                        <div className="relative h-44 w-full bg-muted flex items-center justify-center overflow-hidden">
                           {product.imageUrl ? (
                             <Image
                               src={product.imageUrl}
                               alt={product.name}
                               fill
-                              className="object-cover"
+                              className="object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                           ) : (
-                            <Package className="h-16 w-16 text-muted-foreground" />
+                            <Package className="h-16 w-16 text-muted-foreground group-hover:scale-105 transition-transform" />
                           )}
                         </div>
-                        {product.brand && (
-                          <Badge variant="outline" className="w-fit text-xs">
-                            {product.brand}
-                          </Badge>
-                        )}
-                        <CardTitle className="text-base line-clamp-2">{product.name}</CardTitle>
+                        <div className="p-3">
+                          {product.brand && (
+                            <Badge variant="outline" className="mb-2 text-xs">
+                              {product.brand}
+                            </Badge>
+                          )}
+                          <CardTitle className="text-base line-clamp-2 group-hover:text-primary transition-colors">
+                            {product.name}
+                          </CardTitle>
+                        </div>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="p-3 pt-0">
                         <div className="flex justify-between items-center mb-3">
                           <div>
                             <span className="text-xl font-bold text-primary">
@@ -298,13 +346,13 @@ export function ShopSection({ onCartUpdate }: ShopSectionProps) {
                               /{product.unit}
                             </span>
                           </div>
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="secondary" className="text-xs bg-green-50 text-green-700 border-green-200">
                             {t("shop.inStock")}
                           </Badge>
                         </div>
                         <Button
                           size="sm"
-                          className="w-full bg-secondary hover:bg-secondary/90"
+                          className="w-full bg-secondary hover:bg-secondary/90 shadow-sm"
                           onClick={() => handleAddToCart(product.id)}
                           disabled={addingToCart === product.id}
                         >
