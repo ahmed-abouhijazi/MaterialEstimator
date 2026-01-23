@@ -158,63 +158,115 @@ export function DynamicEstimatorForm() {
   }
 
   const renderModeStep = () => (
-    <Card className="border-2 border-primary/30">
-      <CardHeader>
-        <CardTitle className="text-2xl" style={{ fontFamily: 'var(--font-display)' }}>
+    <Card className="border-2 border-border shadow-lg">
+      <CardHeader className="space-y-3">
+        <CardTitle className="text-2xl md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>
           {t('steps.mode')}
         </CardTitle>
-        <CardDescription>{t('estimator.estimationModes.simpleDesc')}</CardDescription>
+        <CardDescription className="text-base">
+          {t('estimator.estimationModes.description') || 'Choose the level of detail for your estimate'}
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs value={formData.estimationMode || 'simple'} onValueChange={(value) => updateField("estimationMode", value as EstimationMode)}>
-          <TabsList className="grid w-full grid-cols-2 h-auto gap-2 p-1">
-            <TabsTrigger value="simple" className="flex flex-col items-start p-4 h-auto min-h-[100px] text-left whitespace-normal">
-              <span className="text-lg font-semibold">{t('estimator.estimationModes.simple')}</span>
-              <span className="text-xs text-muted-foreground mt-1 leading-relaxed">{t('estimator.estimationModes.simpleDesc')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="advanced" className="flex flex-col items-start p-4 h-auto min-h-[100px] text-left whitespace-normal">
-              <span className="text-lg font-semibold">{t('estimator.estimationModes.advanced')}</span>
-              <span className="text-xs text-muted-foreground mt-1 leading-relaxed">{t('estimator.estimationModes.advancedDesc')}</span>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="grid gap-4 md:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => updateField("estimationMode", "simple")}
+            className={`group rounded-xl border-2 p-6 text-left transition-all duration-300 ${
+              formData.estimationMode === 'simple'
+                ? "border-primary bg-primary/5 shadow-lg scale-105"
+                : "border-border hover:border-primary/50 hover:shadow-md"
+            }`}
+          >
+            <div className="flex items-start gap-3 mb-3">
+              <div className={`p-2 rounded-lg ${
+                formData.estimationMode === 'simple' ? 'bg-primary/10' : 'bg-muted'
+              }`}>
+                <Calculator className="h-6 w-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
+                  {t('estimator.estimationModes.simple')}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {t('estimator.estimationModes.simpleDesc')}
+                </p>
+              </div>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => updateField("estimationMode", "advanced")}
+            className={`group rounded-xl border-2 p-6 text-left transition-all duration-300 ${
+              formData.estimationMode === 'advanced'
+                ? "border-primary bg-primary/5 shadow-lg scale-105"
+                : "border-border hover:border-primary/50 hover:shadow-md"
+            }`}
+          >
+            <div className="flex items-start gap-3 mb-3">
+              <div className={`p-2 rounded-lg ${
+                formData.estimationMode === 'advanced' ? 'bg-primary/10' : 'bg-muted'
+              }`}>
+                <Layers className="h-6 w-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
+                  {t('estimator.estimationModes.advanced')}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {t('estimator.estimationModes.advancedDesc')}
+                </p>
+              </div>
+            </div>
+          </button>
+        </div>
       </CardContent>
     </Card>
   )
 
   const renderProjectTypeStep = () => (
-    <Card className="border-2 border-primary/30">
-      <CardHeader>
-        <CardTitle className="text-2xl" style={{ fontFamily: 'var(--font-display)' }}>
+    <Card className="border-2 border-border shadow-lg">
+      <CardHeader className="space-y-3">
+        <CardTitle className="text-2xl md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>
           {t('steps.projectType')}
         </CardTitle>
-        <CardDescription>Select the type of construction project</CardDescription>
+        <CardDescription className="text-base">
+          {t('estimator.selectProjectType') || 'Choose what you want to build'}
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {projectTypes.map((type) => {
             const Icon = type.icon
+            const isSelected = formData.projectType === type.value
             return (
               <button
                 key={type.value}
                 type="button"
                 onClick={() => updateField("projectType", type.value)}
-                className={`rounded-lg border-2 p-4 text-left transition-all ${
-                  formData.projectType === type.value
-                    ? "border-primary bg-primary/10"
-                    : "border-border hover:border-primary/50"
+                className={`group rounded-xl border-2 p-5 text-left transition-all duration-300 ${
+                  isSelected
+                    ? "border-primary bg-primary/5 shadow-lg scale-105"
+                    : "border-border hover:border-primary/50 hover:shadow-md"
                 }`}
               >
-                <Icon className="h-8 w-8 mb-2 text-primary" />
-                <p className="font-semibold text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
+                <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-3 transition-colors ${
+                  isSelected ? 'bg-primary/10' : 'bg-muted group-hover:bg-primary/5'
+                }`}>
+                  <Icon className="h-7 w-7 text-primary" />
+                </div>
+                <p className="font-bold text-base mb-1 group-hover:text-primary transition-colors" style={{ fontFamily: 'var(--font-display)' }}>
                   {type.label}
                 </p>
-                <p className="text-sm text-muted-foreground mt-1">{type.description}</p>
+                <p className="text-sm text-muted-foreground leading-snug">{type.description}</p>
               </button>
             )
           })}
         </div>
-        {errors.projectType && <p className="mt-2 text-sm text-destructive">{errors.projectType}</p>}
+        {errors.projectType && (
+          <p className="mt-4 text-sm text-destructive font-medium">{errors.projectType}</p>
+        )}
       </CardContent>
     </Card>
   )
@@ -232,57 +284,71 @@ export function DynamicEstimatorForm() {
   }
 
   const renderDimensionsCard = () => (
-    <Card className="border-2 border-border">
-      <CardHeader>
-        <CardTitle style={{ fontFamily: 'var(--font-display)' }}>
+    <Card className="border-2 border-border shadow-lg">
+      <CardHeader className="space-y-2">
+        <CardTitle className="text-xl" style={{ fontFamily: 'var(--font-display)' }}>
           {t('estimator.advancedOptions.dimensions')}
         </CardTitle>
+        <CardDescription>
+          {t('estimator.enterDimensions') || 'Enter the dimensions of your project'}
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-5 grid-cols-1 sm:grid-cols-3">
           <div className="space-y-2">
-            <Label htmlFor="length">{t('estimator.length')} (m)</Label>
+            <Label htmlFor="length" className="text-base font-medium">
+              {t('estimator.length')} (m)
+            </Label>
             <Input
               id="length"
               type="number"
               step="0.1"
               min="0"
-              placeholder="10"
+              placeholder="10.0"
               value={formData.length || ""}
               onChange={(e) => updateField("length", parseFloat(e.target.value) || 0)}
-              className={errors.length ? "border-destructive" : ""}
+              className={`h-12 text-base ${errors.length ? "border-destructive" : "border-2"}`}
             />
+            {errors.length && <p className="text-xs text-destructive">{errors.length}</p>}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="width">{t('estimator.width')} (m)</Label>
+            <Label htmlFor="width" className="text-base font-medium">
+              {t('estimator.width')} (m)
+            </Label>
             <Input
               id="width"
               type="number"
               step="0.1"
               min="0"
-              placeholder="10"
+              placeholder="10.0"
               value={formData.width || ""}
               onChange={(e) => updateField("width", parseFloat(e.target.value) || 0)}
-              className={errors.width ? "border-destructive" : ""}
+              className={`h-12 text-base ${errors.width ? "border-destructive" : "border-2"}`}
             />
+            {errors.width && <p className="text-xs text-destructive">{errors.width}</p>}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="height">{t('estimator.height')} (m)</Label>
+            <Label htmlFor="height" className="text-base font-medium">
+              {t('estimator.height')} (m)
+            </Label>
             <Input
               id="height"
               type="number"
               step="0.1"
               min="0"
-              placeholder="3"
+              placeholder="3.0"
               value={formData.height || ""}
               onChange={(e) => updateField("height", parseFloat(e.target.value) || 0)}
-              className={errors.height ? "border-destructive" : ""}
+              className={`h-12 text-base ${errors.height ? "border-destructive" : "border-2"}`}
             />
+            {errors.height && <p className="text-xs text-destructive">{errors.height}</p>}
           </div>
         </div>
-        <p className="mt-3 text-sm text-muted-foreground">
-          {t('estimator.area')}: <span className="font-medium">{((formData.length || 0) * (formData.width || 0)).toFixed(1)} m²</span>
-        </p>
+        <div className="mt-5 p-4 bg-primary/5 rounded-lg border-2 border-primary/20">
+          <p className="text-sm text-muted-foreground">
+            {t('estimator.area')}: <span className="text-lg font-bold text-primary">{((formData.length || 0) * (formData.width || 0)).toFixed(1)} m²</span>
+          </p>
+        </div>
       </CardContent>
     </Card>
   )
@@ -655,19 +721,21 @@ export function DynamicEstimatorForm() {
   )
 
   const renderLocationStep = () => (
-    <Card className="border-2 border-primary/30">
-      <CardHeader>
-        <CardTitle className="text-2xl" style={{ fontFamily: 'var(--font-display)' }}>
+    <Card className="border-2 border-border shadow-lg">
+      <CardHeader className="space-y-3">
+        <CardTitle className="text-2xl md:text-3xl" style={{ fontFamily: 'var(--font-display)' }}>
           {t('steps.location')}
         </CardTitle>
-        <CardDescription>Final details for accurate pricing</CardDescription>
+        <CardDescription className="text-base">
+          {t('estimator.locationDescription') || 'Choose your location and material quality for accurate pricing'}
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-5 grid-cols-1 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label>{t('estimator.location')}</Label>
+            <Label className="text-base font-medium">{t('estimator.location')}</Label>
             <Select value={formData.location} onValueChange={(value) => updateField("location", value)}>
-              <SelectTrigger className={errors.location ? "border-destructive" : ""}>
+              <SelectTrigger className={`h-12 text-base border-2 ${errors.location ? "border-destructive" : ""}`}>
                 <SelectValue placeholder={t('estimator.selectRegion')} />
               </SelectTrigger>
               <SelectContent>
@@ -676,17 +744,17 @@ export function DynamicEstimatorForm() {
                 ))}
               </SelectContent>
             </Select>
-            {errors.location && <p className="text-sm text-destructive">{errors.location}</p>}
+            {errors.location && <p className="text-sm text-destructive font-medium mt-1">{errors.location}</p>}
           </div>
           
           <div className="space-y-2">
-            <Label>{t('estimator.advancedOptions.zone')}</Label>
+            <Label className="text-base font-medium">{t('estimator.advancedOptions.zone')}</Label>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => updateField("zone", "urban")}
-                className={`flex-1 rounded-lg border-2 px-4 py-2 transition-all ${
-                  formData.zone === "urban" ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
+                className={`flex-1 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-all ${
+                  formData.zone === "urban" ? "border-primary bg-primary/10 text-primary shadow-md" : "border-border hover:border-primary/50"
                 }`}
               >
                 {t('estimator.advancedOptions.urban')}
@@ -694,8 +762,8 @@ export function DynamicEstimatorForm() {
               <button
                 type="button"
                 onClick={() => updateField("zone", "rural")}
-                className={`flex-1 rounded-lg border-2 px-4 py-2 transition-all ${
-                  formData.zone === "rural" ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
+                className={`flex-1 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-all ${
+                  formData.zone === "rural" ? "border-primary bg-primary/10 text-primary shadow-md" : "border-border hover:border-primary/50"
                 }`}
               >
                 {t('estimator.advancedOptions.rural')}
@@ -704,23 +772,23 @@ export function DynamicEstimatorForm() {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label>{t('estimator.qualityLevel')}</Label>
-          <div className="grid grid-cols-3 gap-2">
+        <div className="space-y-3">
+          <Label className="text-base font-medium">{t('estimator.qualityLevel')}</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {qualityLevels.map((level) => (
               <button
                 key={level.value}
                 type="button"
                 onClick={() => updateField("qualityLevel", level.value)}
-                className={`rounded-lg border-2 p-4 text-center transition-all ${
+                className={`rounded-xl border-2 p-5 text-center transition-all duration-300 ${
                   formData.qualityLevel === level.value
-                    ? "border-primary bg-primary/10"
-                    : "border-border hover:border-primary/50"
+                    ? "border-primary bg-primary/5 shadow-lg scale-105"
+                    : "border-border hover:border-primary/50 hover:shadow-md"
                 }`}
                 title={level.description}
               >
-                <p className="font-semibold">{level.label}</p>
-                <p className="text-xs text-muted-foreground mt-1">{level.description}</p>
+                <p className="font-bold text-base mb-2">{level.label}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{level.description}</p>
               </button>
             ))}
           </div>
@@ -729,27 +797,47 @@ export function DynamicEstimatorForm() {
     </Card>
   )
 
+  const stepLabels = ['mode', 'projectType', 'details', 'location']
+
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-5xl mx-auto">
+      {/* Hero Header */}
       <div className="mb-8 text-center">
-        <h1 className="mb-3 text-3xl font-bold text-secondary md:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
+        <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-4 border border-primary/20">
+          <Calculator className="h-4 w-4" />
+          <span className="text-sm font-medium">Material Estimator</span>
+        </div>
+        <h1 className="mb-4 text-4xl md:text-5xl font-bold text-secondary" style={{ fontFamily: 'var(--font-display)' }}>
           {t('estimator.title')}
         </h1>
-        <p className="text-muted-foreground">{t('estimator.calculate')}</p>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t('estimator.subtitle')}</p>
       </div>
 
-      {/* Progress Bar */}
-      <div className="mb-8">
-        <div className="flex justify-between mb-2">
+      {/* Progress Steps */}
+      <div className="mb-10">
+        <div className="flex flex-wrap justify-between gap-2 mb-4">
           {[1, 2, 3, 4].map((step) => (
-            <div key={step} className="flex-1 text-center">
-              <div className={`text-sm font-medium ${currentStep >= step ? 'text-primary' : 'text-muted-foreground'}`}>
-                {t(`steps.${['mode', 'projectType', 'details', 'location'][step - 1]}`)}
+            <div key={step} className="flex-1 min-w-[100px]">
+              <div className="flex flex-col items-center gap-2">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
+                  currentStep === step 
+                    ? 'bg-primary text-primary-foreground scale-110 shadow-lg' 
+                    : currentStep > step 
+                      ? 'bg-primary/20 text-primary' 
+                      : 'bg-muted text-muted-foreground'
+                }`}>
+                  {step}
+                </div>
+                <div className={`text-xs md:text-sm font-medium text-center transition-colors ${
+                  currentStep >= step ? 'text-primary' : 'text-muted-foreground'
+                }`}>
+                  {t(`steps.${stepLabels[step - 1]}`)}
+                </div>
               </div>
             </div>
           ))}
         </div>
-        <Progress value={progress} className="h-2" />
+        <Progress value={progress} className="h-3 rounded-full" />
       </div>
 
       <form onSubmit={(e) => { e.preventDefault(); currentStep === totalSteps ? handleSubmit() : nextStep() }}>
@@ -757,20 +845,35 @@ export function DynamicEstimatorForm() {
           {renderStepContent()}
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between gap-4">
+          <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 pt-4">
             {currentStep > 1 && (
-              <Button type="button" variant="outline" onClick={prevStep} className="flex-1">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Previous
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={prevStep} 
+                className="flex-1 h-12 text-base border-2 hover:border-primary"
+                size="lg"
+              >
+                <ArrowLeft className="mr-2 h-5 w-5" />
+                {t('estimator.previous') || 'Previous'}
               </Button>
             )}
             {currentStep < totalSteps ? (
-              <Button type="submit" className="flex-1 ml-auto">
-                Next
-                <ArrowRight className="ml-2 h-4 w-4" />
+              <Button 
+                type="submit" 
+                className="flex-1 ml-auto h-12 text-base shadow-lg hover:shadow-xl" 
+                size="lg"
+              >
+                {t('estimator.next') || 'Next'}
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             ) : (
-              <Button type="submit" disabled={isCalculating} className="flex-1 ml-auto">
+              <Button 
+                type="submit" 
+                disabled={isCalculating} 
+                className="flex-1 ml-auto h-12 text-base shadow-lg hover:shadow-xl"
+                size="lg"
+              >
                 {isCalculating ? (
                   <>
                     <Calculator className="mr-2 h-5 w-5 animate-pulse" />
@@ -778,8 +881,8 @@ export function DynamicEstimatorForm() {
                   </>
                 ) : (
                   <>
+                    <Calculator className="mr-2 h-5 w-5" />
                     {t('estimator.calculate')}
-                    <ArrowRight className="ml-2 h-5 w-5" />
                   </>
                 )}
               </Button>
