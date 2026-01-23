@@ -121,6 +121,39 @@ export async function GET(request: NextRequest) {
       })
     )
 
+    // Get recent orders
+    const recentOrders = await prisma.order.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: { name: true, email: true }
+        },
+        items: {
+          select: { quantity: true }
+        }
+      }
+    })
+
+    // Get low stock products
+    const lowStockProducts = await prisma.product.findMany({
+      where: {
+        isActive: true,
+        stock: { lt: 50 } // Products with stock < 50
+      },
+      select: {
+        id: true,
+        name: true,
+        stock: true,
+        minStock: true,
+        maxStock: true,
+        category: true,
+        imageUrl: true
+      },
+      orderBy: { stock: 'asc' },
+      take: 10
+    })
+
     return NextResponse.json({
       stats: {
         totalRevenue: currentRevenue,
@@ -134,6 +167,8 @@ export async function GET(request: NextRequest) {
       },
       revenueData: revenueByMonth,
       topProducts: topProductDetails,
+      recentOrders: recentOrders,
+      lowStockProducts: lowStockProducts,
     })
   } catch (error) {
     console.error('Dashboard stats error:', error)
