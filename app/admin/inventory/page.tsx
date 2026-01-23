@@ -67,6 +67,20 @@ const InventoryPage = () => {
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [stockFilter, setStockFilter] = useState("all")
 
+  // Product categories
+  const categories = [
+    { id: "CONCRETE", name: "Béton" },
+    { id: "STEEL", name: "Acier" },
+    { id: "WOOD", name: "Bois" },
+    { id: "INSULATION", name: "Isolation" },
+    { id: "ROOFING", name: "Toiture" },
+    { id: "PAINT", name: "Peinture" },
+    { id: "PLUMBING", name: "Plomberie" },
+    { id: "ELECTRICAL", name: "Électricité" },
+    { id: "FLOORING", name: "Revêtement de sol" },
+    { id: "OTHER", name: "Autre" },
+  ]
+
   useEffect(() => {
     fetchProducts()
   }, [])
