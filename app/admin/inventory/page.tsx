@@ -123,26 +123,15 @@ const InventoryPage = () => {
     setImagePreview("")
   }
 
-  const uploadImageToCloudinary = async (file: File): Promise<string> => {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('upload_preset', 'ml_default') // You can create a preset in Cloudinary
-    formData.append('cloud_name', 'your-cloud-name') // Replace with your Cloudinary cloud name
-
-    try {
-      const response = await fetch(
-        'https://api.cloudinary.com/v1_1/your-cloud-name/image/upload', // Replace with your cloud name
-        {
-          method: 'POST',
-          body: formData,
-        }
-      )
-      const data = await response.json()
-      return data.secure_url
-    } catch (error) {
-      console.error('Error uploading image:', error)
-      throw error
-    }
+  const convertImageToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        resolve(reader.result as string)
+      }
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
   }
 
   if (loading) {
@@ -369,13 +358,13 @@ const InventoryPage = () => {
                 </Button>
               </DialogFooter>
             </DialogContent>
-          </Dialog>(open) => {
-            if (!open) handleCloseEditDialog()
-            else setIsEditDialogOpen(true)
-          }
+          </Dialog>
 
           {/* Edit Product Dialog */}
-          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <Dialog open={isEditDialogOpen} onOpenChange={(open) => {
+            if (!open) handleCloseEditDialog()
+            else setIsEditDialogOpen(true)
+          }}>
             <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-2xl">
               <DialogHeader>
                 <DialogTitle>Modifier le produit</DialogTitle>
