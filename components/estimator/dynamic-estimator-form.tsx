@@ -826,7 +826,7 @@ export function DynamicEstimatorForm() {
                 <div className={`text-xs md:text-sm font-medium text-center transition-colors ${
                   currentStep >= step ? 'text-primary' : 'text-muted-foreground'
                 }`}>
-                  {t(`steps.${stepLabels[step - 1]}`)}
+                  {t(`estimator.steps.${stepLabels[step - 1]}`)}
                 </div>
               </div>
             </div>
