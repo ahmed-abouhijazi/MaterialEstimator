@@ -52,6 +52,9 @@ import {
   PackagePlus,
   PackageMinus,
   Loader2,
+  Upload,
+  X,
+  Image as ImageIcon,
 } from "lucide-react"
 import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
@@ -81,6 +84,9 @@ const InventoryPage = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [stockFilter, setStockFilter] = useState("all")
+  const [imagePreview, setImagePreview] = useState<string>("")
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   useEffect(() => {
     fetchProducts()
@@ -97,6 +103,45 @@ const InventoryPage = () => {
       console.error('Error fetching products:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setImageFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const removeImage = () => {
+    setImageFile(null)
+    setImagePreview("")
+  }
+
+  const uploadImageToCloudinary = async (file: File): Promise<string> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('upload_preset', 'ml_default') // You can create a preset in Cloudinary
+    formData.append('cloud_name', 'your-cloud-name') // Replace with your Cloudinary cloud name
+
+    try {
+      const response = await fetch(
+        'https://api.cloudinary.com/v1_1/your-cloud-name/image/upload', // Replace with your cloud name
+        {
+          method: 'POST',
+          body: formData,
+        }
+      )
+      const data = await response.json()
+      return data.secure_url
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      throw error
     }
   }
 
@@ -140,6 +185,26 @@ const InventoryPage = () => {
   const lowStockCount = products.filter((p) => p.stock < (p.minStock || 10) && p.stock > 0).length
   const outOfStockCount = products.filter((p) => p.stock === 0).length
 
+  const handleOpenEditDialog = (product: any) => {
+    setSelectedProduct(product)
+    setImagePreview(product.imageUrl || "")
+    setImageFile(null)
+    setIsEditDialogOpen(true)
+  }
+
+  const handleCloseAddDialog = () => {
+    setIsAddDialogOpen(false)
+    setImagePreview("")
+    setImageFile(null)
+  }
+
+  const handleCloseEditDialog = () => {
+    setIsEditDialogOpen(false)
+    setImagePreview("")
+    setImageFile(null)
+    setSelectedProduct(null)
+  }
+
   return (
     <Suspense fallback={<Loading />}>
       <div className="space-y-6 pt-12 lg:pt-0">
@@ -149,7 +214,10 @@ const InventoryPage = () => {
             <h1 className="text-2xl lg:text-3xl font-bold text-white">Inventaire</h1>
             <p className="text-slate-400">Gérez vos produits et votre stock</p>
           </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
+            if (!open) handleCloseAddDialog()
+            else setIsAddDialogOpen(true)
+          }}>
             <DialogTrigger asChild>
               <Button className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white">
                 <Plus className="h-4 w-4 mr-2" />
@@ -164,6 +232,52 @@ const InventoryPage = () => {
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
+                {/* Image Upload Section */}
+                <div className="space-y-2">
+                  <Label className="text-slate-300">Image du produit</Label>
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      {imagePreview ? (
+                        <div className="relative w-32 h-32 rounded-lg overflow-hidden border-2 border-slate-700">
+                          <img
+                            src={imagePreview}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            onClick={removeImage}
+                            className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-32 h-32 rounded-lg border-2 border-dashed border-slate-700 flex items-center justify-center bg-slate-800/50">
+                          <ImageIcon className="h-12 w-12 text-slate-600" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <label htmlFor="add-image-upload" className="cursor-pointer">
+                        <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors">
+                          <Upload className="h-4 w-4" />
+                          <span className="text-sm">
+                            {imagePreview ? 'Changer l\'image' : 'Télécharger une image'}
+                          </span>
+                        </div>
+                        <input
+                          id="add-image-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="hidden"
+                        />
+                      </label>
+                      <p className="text-xs text-slate-500 mt-2">PNG, JPG ou WEBP (max 5MB)</p>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-slate-300">Nom du produit</Label>
@@ -247,7 +361,7 @@ const InventoryPage = () => {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="border-slate-700 text-slate-300 hover:bg-slate-800">
+                <Button variant="outline" onClick={handleCloseAddDialog} className="border-slate-700 text-slate-300 hover:bg-slate-800">
                   Annuler
                 </Button>
                 <Button className="bg-gradient-to-r from-amber-500 to-orange-600 text-white">
@@ -255,7 +369,10 @@ const InventoryPage = () => {
                 </Button>
               </DialogFooter>
             </DialogContent>
-          </Dialog>
+          </Dialog>(open) => {
+            if (!open) handleCloseEditDialog()
+            else setIsEditDialogOpen(true)
+          }
 
           {/* Edit Product Dialog */}
           <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -267,6 +384,52 @@ const InventoryPage = () => {
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
+                {/* Image Upload Section */}
+                <div className="space-y-2">
+                  <Label className="text-slate-300">Image du produit</Label>
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      {imagePreview || selectedProduct?.imageUrl ? (
+                        <div className="relative w-32 h-32 rounded-lg overflow-hidden border-2 border-slate-700">
+                          <img
+                            src={imagePreview || selectedProduct?.imageUrl}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            onClick={removeImage}
+                            className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-32 h-32 rounded-lg border-2 border-dashed border-slate-700 flex items-center justify-center bg-slate-800/50">
+                          <ImageIcon className="h-12 w-12 text-slate-600" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <label htmlFor="image-upload" className="cursor-pointer">
+                        <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors">
+                          <Upload className="h-4 w-4" />
+                          <span className="text-sm">
+                            {imagePreview || selectedProduct?.imageUrl ? 'Changer l\'image' : 'Télécharger une image'}
+                          </span>
+                        </div>
+                        <input
+                          id="image-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="hidden"
+                        />
+                      </label>
+                      <p className="text-xs text-slate-500 mt-2">PNG, JPG ou WEBP (max 5MB)</p>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-slate-300">Nom du produit</Label>
@@ -358,7 +521,7 @@ const InventoryPage = () => {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="border-slate-700 text-slate-300 hover:bg-slate-800">
+                <Button variant="outline" onClick={handleCloseEditDialog} className="border-slate-700 text-slate-300 hover:bg-slate-800">
                   Annuler
                 </Button>
                 <Button className="bg-gradient-to-r from-amber-500 to-orange-600 text-white">
@@ -543,10 +706,7 @@ const InventoryPage = () => {
                               <DropdownMenuSeparator className="bg-slate-800" />
                               <DropdownMenuItem 
                                 className="text-white focus:bg-slate-800"
-                                onClick={() => {
-                                  setSelectedProduct(product)
-                                  setIsEditDialogOpen(true)
-                                }}
+                                onClick={() => handleOpenEditDialog(product)}
                               >
                                 <Pencil className="h-4 w-4 mr-2" />
                                 Modifier
