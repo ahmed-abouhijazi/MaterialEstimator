@@ -141,66 +141,79 @@ export function CartDrawer({ open, onOpenChange, onCartUpdate }: CartDrawerProps
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-lg flex flex-col">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2 text-2xl">
-            <ShoppingCart className="h-6 w-6 text-primary" />
+      <SheetContent className="w-full sm:max-w-lg flex flex-col p-0">
+        <SheetHeader className="px-6 pt-6 pb-4 border-b bg-gradient-to-b from-primary/5 to-transparent">
+          <SheetTitle className="flex items-center gap-3 text-2xl font-bold">
+            <div className="bg-primary/10 p-2 rounded-lg">
+              <ShoppingCart className="h-6 w-6 text-primary" />
+            </div>
             {t("cart.title")}
           </SheetTitle>
-          <SheetDescription>
+          <SheetDescription className="text-base pt-1">
             {cartItems.length} {cartItems.length === 1 ? t("cart.itemInCart") : t("cart.itemsInCart")}
           </SheetDescription>
         </SheetHeader>
 
         {loading ? (
-          <div className="flex-1 flex items-center justify-center">
-            <p className="text-muted-foreground">Loading...</p>
+          <div className="flex-1 flex items-center justify-center px-6">
+            <div className="text-center space-y-3">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+              <p className="text-muted-foreground">Loading...</p>
+            </div>
           </div>
         ) : cartItems.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-4 py-8">
-            <Package className="h-16 w-16 text-muted-foreground" />
-            <p className="text-muted-foreground text-center">{t("cart.emptyCart")}</p>
-            <Button onClick={() => onOpenChange(false)} className="bg-primary hover:bg-primary/90">
+          <div className="flex-1 flex flex-col items-center justify-center gap-6 py-12 px-6">
+            <div className="bg-muted/50 p-8 rounded-full">
+              <Package className="h-20 w-20 text-muted-foreground" />
+            </div>
+            <div className="text-center space-y-2">
+              <p className="text-lg font-semibold">{t("cart.emptyCart")}</p>
+              <p className="text-sm text-muted-foreground">Add items to get started</p>
+            </div>
+            <Button onClick={() => onOpenChange(false)} className="bg-primary hover:bg-primary/90" size="lg">
               {t("cart.continueShopping")}
             </Button>
           </div>
         ) : (
           <>
-            <ScrollArea className="flex-1 -mx-6 px-6">
-              <div className="space-y-4 py-4">
+            <ScrollArea className="flex-1 px-6">
+              <div className="space-y-4 py-6">
                 {cartItems.map((item) => (
-                  <div key={item.id} className="flex gap-4 p-3 border-2 border-border rounded-lg">
-                    <div className="relative h-20 w-20 bg-muted rounded-md flex-shrink-0 flex items-center justify-center">
+                  <div key={item.id} className="group relative flex gap-4 p-4 border rounded-xl hover:shadow-md transition-all duration-200 bg-card hover:border-primary/20">
+                    <div className="relative h-24 w-24 bg-gradient-to-br from-muted to-muted/50 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden border">
                       {item.product.imageUrl ? (
                         <Image
                           src={item.product.imageUrl}
                           alt={item.product.name}
                           fill
-                          className="object-cover rounded-md"
+                          className="object-cover"
                         />
                       ) : (
-                        <Package className="h-10 w-10 text-muted-foreground" />
+                        <Package className="h-12 w-12 text-muted-foreground/50" />
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-sm text-secondary line-clamp-2">
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <h4 className="font-semibold text-base line-clamp-2 pr-2">
                         {item.product.name}
                       </h4>
-                      <p className="text-sm text-primary font-bold mt-1">
-                        {item.product.currency} {item.product.price.toFixed(2)}
-                      </p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <div className="flex items-center border-2 border-border rounded">
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-lg text-primary font-bold">
+                          {item.product.currency} {item.product.price.toFixed(2)}
+                        </p>
+                        <span className="text-xs text-muted-foreground">per {item.product.unit}</span>
+                      </div>
+                      <div className="flex items-center gap-3 pt-1">
+                        <div className="flex items-center bg-muted rounded-lg border">
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
                             disabled={updating === item.id || item.quantity <= 1}
-                            className="h-7 w-7 p-0"
+                            className="h-8 w-8 p-0 hover:bg-muted-foreground/10 rounded-l-lg"
                           >
-                            <Minus className="h-3 w-3" />
+                            <Minus className="h-4 w-4" />
                           </Button>
-                          <span className="w-8 text-center text-sm font-semibold">
+                          <span className="w-10 text-center text-sm font-semibold">
                             {item.quantity}
                           </span>
                           <Button
@@ -208,9 +221,9 @@ export function CartDrawer({ open, onOpenChange, onCartUpdate }: CartDrawerProps
                             size="sm"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                             disabled={updating === item.id || item.quantity >= item.product.stock}
-                            className="h-7 w-7 p-0"
+                            className="h-8 w-8 p-0 hover:bg-muted-foreground/10 rounded-r-lg"
                           >
-                            <Plus className="h-3 w-3" />
+                            <Plus className="h-4 w-4" />
                           </Button>
                         </div>
                         <Button
@@ -218,14 +231,14 @@ export function CartDrawer({ open, onOpenChange, onCartUpdate }: CartDrawerProps
                           size="sm"
                           onClick={() => removeItem(item.id)}
                           disabled={updating === item.id}
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10 h-7 px-2"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-3 rounded-lg"
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-bold text-secondary">
+                    <div className="text-right flex flex-col justify-between">
+                      <p className="text-base font-bold">
                         {item.product.currency} {(item.product.price * item.quantity).toFixed(2)}
                       </p>
                     </div>
@@ -234,8 +247,8 @@ export function CartDrawer({ open, onOpenChange, onCartUpdate }: CartDrawerProps
               </div>
             </ScrollArea>
 
-            <div className="border-t-2 border-border pt-4 space-y-4">
-              <div className="space-y-2">
+            <div className="border-t bg-gradient-to-t from-muted/20 to-transparent px-6 py-5 space-y-5">
+              <div className="space-y-3 bg-card rounded-lg p-4 border">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">{t("cart.subtotal")}</span>
                   <span className="font-semibold">
@@ -248,28 +261,29 @@ export function CartDrawer({ open, onOpenChange, onCartUpdate }: CartDrawerProps
                     {cartItems[0]?.product.currency || "USD"} {shipping.toFixed(2)}
                   </span>
                 </div>
-                <Separator />
-                <div className="flex justify-between text-lg font-bold">
-                  <span className="text-secondary">{t("cart.grandTotal")}</span>
-                  <span className="text-primary">
+                <Separator className="my-2" />
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-bold">{t("cart.grandTotal")}</span>
+                  <span className="text-xl font-bold text-primary">
                     {cartItems[0]?.product.currency || "USD"} {total.toFixed(2)}
                   </span>
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Button
                   onClick={goToCheckout}
-                  className="w-full bg-primary hover:bg-primary/90"
+                  className="w-full bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
                   size="lg"
                 >
-                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  <ShoppingCart className="h-5 w-5 mr-2" />
                   {t("cart.proceedToCheckout")}
                 </Button>
                 <Button
                   onClick={viewFullCart}
                   variant="outline"
-                  className="w-full border-2"
+                  className="w-full border-2 hover:bg-muted"
+                  size="lg"
                 >
                   View Full Cart
                   <ArrowRight className="h-4 w-4 ml-2" />
