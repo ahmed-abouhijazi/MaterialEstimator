@@ -43,7 +43,6 @@ export async function GET(request: NextRequest) {
       currentMonthOrders,
       lastMonthOrders,
       totalProducts,
-      lowStockProducts,
       totalUsers,
       lastMonthUsers,
     ] = await Promise.all([
@@ -60,12 +59,6 @@ export async function GET(request: NextRequest) {
         _count: true,
       }),
       prisma.product.count({ where: { isActive: true } }),
-      prisma.product.count({
-        where: {
-          isActive: true,
-          stock: { lt: prisma.product.fields.minStock },
-        },
-      }),
       prisma.user.count({ where: { role: 'CUSTOMER' } }),
       prisma.user.count({
         where: {
@@ -74,6 +67,14 @@ export async function GET(request: NextRequest) {
         },
       }),
     ])
+
+    // Count low stock products separately
+    const lowStockProducts = await prisma.product.count({
+      where: {
+        isActive: true,
+        stock: { lt: 50 }, // Products with less than 50 in stock
+      },
+    })
 
     const currentRevenue = currentMonthOrders._sum.totalAmount || 0
     const lastRevenue = lastMonthOrders._sum.totalAmount || 0
@@ -85,17 +86,29 @@ export async function GET(request: NextRequest) {
 
     const usersChange = lastMonthUsers > 0 ? ((totalUsers - lastMonthUsers) / lastMonthUsers) * 100 : 0
 
-    // Get recent revenue data (last 6 months)
-    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1)
-    const revenueByMonth = await prisma.$queryRaw`
-      SELECT 
-        TO_CHAR(DATE_TRUNC('month', "createdAt"), 'Mon') as month,
-        SUM("totalAmount")::float as revenue
-      FROM "Order"
-      WHERE "createdAt" >= ${sixMonthsAgo}
-      GROUP BY DATE_TRUNC('month', "createdAt")
-      ORDER BY DATE_TRUNC('month', "createdAt")
-    `
+    // Get revenue by month - simple aggregation without raw SQL
+    const allOrders = await prisma.order.findMany({
+      where: {
+        createdAt: { gte: sixMonthsAgo }
+      },
+      select: {
+        createdAt: true,
+        totalAmount: true
+      }
+    })
+
+    // Group by month manually
+    const revenueByMonthMap = new Map<string, number>()
+    allOrders.forEach(order => {
+      const monthKey = order.createdAt.toLocaleDateString('en-US', { month: 'short' })
+      const current = revenueByMonthMap.get(monthKey) || 0
+      revenueByMonthMap.set(monthKey, current + order.totalAmount)
+    })
+
+    const revenueByMonth = Array.from(revenueByMonthMap.entries()).map(([month, revenue]) => ({
+      month,
+      revenue
+    }))
 
     // Get top products
     const topProducts = await prisma.orderItem.groupBy({
@@ -122,7 +135,7 @@ export async function GET(request: NextRequest) {
     )
 
     // Get recent orders
-    const recentOrders = await prisma.order.findMany({
+    const recentOrdersData = await prisma.order.findMany({
       take: 5,
       orderBy: { createdAt: 'desc' },
       include: {
@@ -130,13 +143,18 @@ export async function GET(request: NextRequest) {
           select: { name: true, email: true }
         },
         items: {
-          select: { quantity: true }
+          select: { 
+            quantity: true,
+            product: {
+              select: { name: true }
+            }
+          }
         }
       }
     })
 
-    // Get low stock products
-    const lowStockProducts = await prisma.product.findMany({
+    // Get low stock products list
+    const lowStockProductsList = await prisma.product.findMany({
       where: {
         isActive: true,
         stock: { lt: 50 } // Products with stock < 50
@@ -162,8 +180,8 @@ export async function GET(request: NextRequest) {
         ordersChange: Math.round(ordersChange * 10) / 10,
         totalProducts,
         lowStockProducts,
-        totalUsers,
-        usersChange: Math.round(usersChange * 10) / 10,
+        totalUsers,Data,
+      lowStockProducts: lowStockProductsListnge * 10) / 10,
       },
       revenueData: revenueByMonth,
       topProducts: topProductDetails,
