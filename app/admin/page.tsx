@@ -177,7 +177,7 @@ export default function AdminDashboardPage() {
             </div>
           </CardHeader>
           <CardContent className="overflow-hidden">
-            <RevenueChart data={revenueData} />
+            <RevenueChart data={dashboardData.revenueData} />
           </CardContent>
         </Card>
 
