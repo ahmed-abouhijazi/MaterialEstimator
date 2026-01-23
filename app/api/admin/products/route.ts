@@ -72,15 +72,23 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session || !session.user) {
+    // Check JWT authentication
+    const token = request.cookies.get('admin-token')?.value
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    let payload
+    try {
+      const verified = await jwtVerify(token, JWT_SECRET)
+      payload = verified.payload
+    } catch (error) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
     // Check if user is admin
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email! },
+      where: { email: payload.email as string },
       select: { role: true }
     })
 
@@ -120,15 +128,23 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session || !session.user) {
+    // Check JWT authentication
+    const token = request.cookies.get('admin-token')?.value
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    let payload
+    try {
+      const verified = await jwtVerify(token, JWT_SECRET)
+      payload = verified.payload
+    } catch (error) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
     // Check if user is admin
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email! },
+      where: { email: payload.email as string },
       select: { role: true }
     })
 
@@ -155,15 +171,23 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session || !session.user) {
+    // Check JWT authentication
+    const token = request.cookies.get('admin-token')?.value
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    let payload
+    try {
+      const verified = await jwtVerify(token, JWT_SECRET)
+      payload = verified.payload
+    } catch (error) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
     // Check if user is admin
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email! },
+      where: { email: payload.email as string },
       select: { role: true }
     })
 

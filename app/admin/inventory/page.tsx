@@ -192,11 +192,6 @@ const InventoryPage = () => {
     }
   }
 
-  const removeImage = () => {
-    setImageFile(null)
-    setImagePreview("")
-  }
-
   const convertImageToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
