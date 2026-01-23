@@ -24,11 +24,7 @@ const projectIcons: Record<ProjectType, any> = {
 }
 
 const locations = [
-  "United States - Northeast",
-  "United States - Southeast", 
-  "United States - Midwest",
-  "United States - Southwest",
-  "United States - West Coast",
+  "United States",
   "Canada",
   "United Kingdom",
   "Australia",
@@ -51,6 +47,7 @@ export function DynamicEstimatorForm() {
 
   const totalSteps = 4
   const progress = (currentStep / totalSteps) * 100
+  const stepLabels = ['mode', 'projectType', 'details', 'location']
 
   const projectTypes: { value: ProjectType; label: string; description: string; icon: any }[] = [
     { value: "house", label: t('estimator.projectTypes.house'), description: t('estimator.projectTypes.houseDesc'), icon: Home },
@@ -796,8 +793,6 @@ export function DynamicEstimatorForm() {
       </CardContent>
     </Card>
   )
-
-  const stepLabels = ['mode', 'projectType', 'details', 'location']
 
   return (
     <div className="max-w-5xl mx-auto">

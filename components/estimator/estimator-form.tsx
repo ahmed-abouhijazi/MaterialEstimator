@@ -15,11 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { calculateMaterials, type ProjectInput, type ProjectType, type QualityLevel, type EstimationMode, type EstimateResult } from "@/lib/calculations"
 
 const locations = [
-  "United States - Northeast",
-  "United States - Southeast",
-  "United States - Midwest",
-  "United States - Southwest",
-  "United States - West Coast",
+  "United States",
   "Canada",
   "United Kingdom",
   "Australia",
