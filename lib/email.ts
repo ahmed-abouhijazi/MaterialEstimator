@@ -2,12 +2,15 @@ import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+// Use custom domain if configured, otherwise fall back to resend.dev (testing only)
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'BuildCalc Pro <onboarding@resend.dev>'
+
 export async function sendVerificationEmail(email: string, token: string) {
   const verificationUrl = `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`
 
   try {
     await resend.emails.send({
-      from: 'BuildCalc Pro <onboarding@resend.dev>',
+      from: FROM_EMAIL,
       to: email,
       subject: 'Verify your email - BuildCalc Pro',
       html: `
@@ -67,7 +70,7 @@ export async function sendVerificationEmail(email: string, token: string) {
 export async function sendWelcomeEmail(email: string, name: string) {
   try {
     await resend.emails.send({
-      from: 'BuildCalc Pro <onboarding@resend.dev>',
+      from: FROM_EMAIL,
       to: email,
       subject: 'Welcome to BuildCalc Pro! 🎊',
       html: `

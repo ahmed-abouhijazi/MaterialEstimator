@@ -49,6 +49,26 @@
 vercel env add RESEND_API_KEY production
 ```
 
+### Step 4: Verify a Custom Domain (REQUIRED for Production)
+
+**⚠️ IMPORTANT**: The default `resend.dev` domain only works for YOUR email address. To send emails to your users, you MUST verify a custom domain.
+
+**Quick Setup**:
+1. Go to: https://resend.com/domains
+2. Click "Add Domain"
+3. Enter your domain (e.g., `mail.yourdomain.com`)
+4. Add the DNS records provided to your domain registrar
+5. Wait 5-60 minutes for verification
+6. Once verified, add to Vercel:
+```bash
+vercel env add RESEND_FROM_EMAIL production
+# Enter: BuildCalc Pro <onboarding@yourdomain.com>
+```
+
+**📖 For detailed instructions, see [RESEND_DOMAIN_SETUP.md](./RESEND_DOMAIN_SETUP.md)**
+
+**Don't have a domain?** See the guide for free alternatives or testing options.
+
 Or manually in Vercel Dashboard:
 1. Go to: Project Settings → Environment Variables
 2. Add: `RESEND_API_KEY` = `re_your_key_here`
