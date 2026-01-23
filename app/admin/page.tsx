@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -11,8 +12,8 @@ import {
   TrendingDown,
   AlertTriangle,
   ArrowUpRight,
+  Loader2,
 } from "lucide-react"
-import { dashboardStats, revenueData, topProducts, orders, products } from "@/lib/admin/mock-data"
 import { RevenueChart } from "@/components/admin/revenue-chart"
 import { RecentOrdersTable } from "@/components/admin/recent-orders-table"
 import { LowStockAlert } from "@/components/admin/low-stock-alert"
@@ -26,41 +27,86 @@ const formatCurrency = (value: number) => {
   }).format(value)
 }
 
-const stats = [
-  {
-    title: "Chiffre d'affaires",
-    value: formatCurrency(dashboardStats.totalRevenue),
-    change: dashboardStats.revenueChange,
-    icon: DollarSign,
-    description: "vs mois dernier",
-  },
-  {
-    title: "Commandes",
-    value: dashboardStats.totalOrders.toString(),
-    change: dashboardStats.ordersChange,
-    icon: ShoppingCart,
-    description: "vs mois dernier",
-  },
-  {
-    title: "Produits",
-    value: dashboardStats.totalProducts.toString(),
-    change: null,
-    icon: Package,
-    description: `${dashboardStats.lowStockProducts} en stock faible`,
-    alert: dashboardStats.lowStockProducts > 0,
-  },
-  {
-    title: "Clients",
-    value: dashboardStats.totalUsers.toString(),
-    change: dashboardStats.usersChange,
-    icon: Users,
-    description: "vs mois dernier",
-  },
-]
-
 export default function AdminDashboardPage() {
-  const recentOrders = orders.slice(0, 5)
-  const lowStockProducts = products.filter((p) => p.stock < p.minStock)
+  const [loading, setLoading] = useState(true)
+  const [dashboardData, setDashboardData] = useState<any>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/admin/dashboard')
+      if (!response.ok) {
+        throw new Error('Failed to fetch dashboard data')
+      }
+      const data = await response.json()
+      setDashboardData(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <p className="text-white text-lg font-semibold mb-2">Erreur de chargement</p>
+          <p className="text-slate-400">{error}</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!dashboardData) {
+    return null
+  }
+
+  const stats = [
+    {
+      title: "Chiffre d'affaires",
+      value: formatCurrency(dashboardData.stats.totalRevenue),
+      change: dashboardData.stats.revenueChange,
+      icon: DollarSign,
+      description: "vs mois dernier",
+    },
+    {
+      title: "Commandes",
+      value: dashboardData.stats.totalOrders.toString(),
+      change: dashboardData.stats.ordersChange,
+      icon: ShoppingCart,
+      description: "vs mois dernier",
+    },
+    {
+      title: "Produits",
+      value: dashboardData.stats.totalProducts.toString(),
+      change: null,
+      icon: Package,
+      description: `${dashboardData.stats.lowStockProducts} en stock faible`,
+      alert: dashboardData.stats.lowStockProducts > 0,
+    },
+    {
+      title: "Clients",
+      value: dashboardData.stats.totalUsers.toString(),
+      change: dashboardData.stats.usersChange,
+      icon: Users,
+      description: "vs mois dernier",
+    },
+  ]
 
   return (
     <div className="space-y-6 pt-12 lg:pt-0">
@@ -86,7 +132,7 @@ export default function AdminDashboardPage() {
                 {stat.change !== null && (
                   <Badge
                     variant="secondary"
-                    className={`shrink-0 ${
+                    className={`dashboardData.shrink-0 ${
                       stat.change >= 0
                         ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                         : "bg-red-500/10 text-red-400 border-red-500/20"
@@ -143,7 +189,7 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent className="overflow-hidden">
             <div className="space-y-4">
-              {topProducts.map((product, index) => (
+              {dashboardData.topProducts.map((product: any, index: number) => (
                 <div key={product.id} className="flex items-center gap-3">
                   <div className="h-8 w-8 rounded-lg bg-slate-800 flex items-center justify-center text-sm font-bold text-amber-500 shrink-0">
                     {index + 1}
@@ -173,7 +219,7 @@ export default function AdminDashboardPage() {
             </div>
           </CardHeader>
           <CardContent className="overflow-hidden">
-            <RecentOrdersTable orders={recentOrders} />
+            <RecentOrdersTable orders={dashboardData.recentOrders} />
           </CardContent>
         </Card>
 
@@ -185,15 +231,15 @@ export default function AdminDashboardPage() {
                 <CardTitle className="text-white truncate">Alertes de stock</CardTitle>
                 <CardDescription className="text-slate-400 truncate">Produits en stock faible</CardDescription>
               </div>
-              {lowStockProducts.length > 0 && (
+              {dashboardData.lowStockProducts.length > 0 && (
                 <Badge variant="secondary" className="bg-red-500/10 text-red-400 border-red-500/20 shrink-0">
-                  {lowStockProducts.length} alerte{lowStockProducts.length > 1 ? "s" : ""}
+                  {dashboardData.lowStockProducts.length} alerte{dashboardData.lowStockProducts.length > 1 ? "s" : ""}
                 </Badge>
               )}
             </div>
           </CardHeader>
           <CardContent className="overflow-hidden">
-            <LowStockAlert products={lowStockProducts} />
+            <LowStockAlert products={dashboardData.lowStockProducts} />
           </CardContent>
         </Card>
       </div>
