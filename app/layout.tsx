@@ -5,6 +5,7 @@ import { Analytics } from '@vercel/analytics/next'
 import { ThemeProvider } from '@/components/theme-provider'
 import { SessionProvider } from 'next-auth/react'
 import { LocaleProvider } from '@/lib/locale-context'
+import { ChatBot } from '@/components/chat-bot'
 import './globals.css'
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -104,6 +105,7 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               {children}
+              <ChatBot />
               <Analytics />
             </ThemeProvider>
           </LocaleProvider>
