@@ -1,4 +1,25 @@
 {
+  "chat": {
+    "title": "BuildCalc AI",
+    "subtitle": "Construction assistant",
+    "welcome": "Hi! I'm BuildCalc AI 👷 Ask me anything about construction materials, project costs, or building best practices.",
+    "cleared": "Chat cleared. How can I help you with your construction project?",
+    "placeholder": "Ask about materials, costs, plans…",
+    "clearTitle": "Clear chat",
+    "minimise": "Minimise",
+    "expand": "Expand",
+    "close": "Close",
+    "openLabel": "Open AI chat",
+    "noMore": "No more prompts needed in this step.",
+    "connectionError": "Connection error. Please check your internet and try again.",
+    "fallback": "Sorry, I couldn't get a response right now. Please try again.",
+    "starters": [
+      "How much cement do I need for a 10×8m slab?",
+      "What's the best roofing material for a wet climate?",
+      "How do I reduce material costs on my house build?",
+      "What does a standard estimate include?"
+    ]
+  },
   "nav": {
     "estimator": "Estimator",
     "dashboard": "Dashboard",

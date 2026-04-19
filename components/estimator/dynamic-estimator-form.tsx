@@ -7,12 +7,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
-import { Calculator, ArrowRight, ArrowLeft, Home, Plus, Layers, Hammer, Building, Mountain, Wrench, Sparkles, Loader2, CheckCircle2, Bot } from "lucide-react"
+import { Calculator, ArrowRight, ArrowLeft, Home, Plus, Layers, Hammer, Building, Mountain, Wrench, Loader2, CheckCircle2 } from "lucide-react"
 import { calculateMaterials, type ProjectInput, type ProjectType, type QualityLevel, type EstimateResult } from "@/lib/calculations"
-import { FloorPlan2D } from "@/components/estimator/floor-plan-2d"
 
 type SmartQuestion = {
   step: 1 | 2 | 3
@@ -43,10 +41,6 @@ export function DynamicEstimatorForm() {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1)
   const [isCalculating, setIsCalculating] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [aiPlanStatus, setAiPlanStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
-  const [aiPlanDetails, setAiPlanDetails] = useState<string | null>(null)
-  const [shouldAutoGenerate, setShouldAutoGenerate] = useState(false)
-  const [isPreviewing, setIsPreviewing] = useState(false)
 
   const [formData, setFormData] = useState<Partial<ProjectInput>>({
     estimationMode: "advanced",
@@ -129,7 +123,7 @@ export function DynamicEstimatorForm() {
 
   const smartQuestions = useMemo(() => {
     const questions: SmartQuestion[] = [
-      // ── STEP 1: Project Type ────────────────────────────────────────────
+      // â”€â”€ STEP 1: Project Type â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       {
         step: 1,
         key: "projectType",
@@ -139,7 +133,7 @@ export function DynamicEstimatorForm() {
         options: projectTypes.map((pt) => ({ value: pt.value, label: pt.label })),
       },
 
-      // ── STEP 2: Dimensions & Space ──────────────────────────────────────
+      // â”€â”€ STEP 2: Dimensions & Space â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       {
         step: 2,
         key: "length",
@@ -158,7 +152,7 @@ export function DynamicEstimatorForm() {
         step: 2,
         key: "height",
         title: "Floor-to-ceiling height (m)",
-        description: "Wall height per floor — affects structure, paint area, and service runs.",
+        description: "Wall height per floor â€” affects structure, paint area, and service runs.",
         type: "number", min: 2, max: 8, stepValue: 0.1,
       },
       {
@@ -248,7 +242,7 @@ export function DynamicEstimatorForm() {
         showWhen: (form) => ["house", "extension", "roof"].includes(form.projectType || "house"),
       },
 
-      // ── STEP 3: Quality & Services ──────────────────────────────────────
+      // â”€â”€ STEP 3: Quality & Services â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       {
         step: 3,
         key: "location",
@@ -274,7 +268,7 @@ export function DynamicEstimatorForm() {
         title: "Material quality",
         description: "Sets unit pricing tier and brand recommendations across all materials.",
         type: "select",
-        options: qualityLevels.map((q) => ({ value: q.value, label: `${q.label} — ${q.description}` })),
+        options: qualityLevels.map((q) => ({ value: q.value, label: `${q.label} â€” ${q.description}` })),
       },
       {
         step: 3,
@@ -395,19 +389,6 @@ export function DynamicEstimatorForm() {
       const next = Math.min(currentStep + 1, totalSteps) as 1 | 2 | 3
       setCurrentStep(next)
     }
-  }
-
-  const handlePreviewPlan = () => {
-    if (!validateStep(currentStep)) return
-    setShouldAutoGenerate(false)           // reset first so the flip false→true re-fires useEffect
-    setIsPreviewing(true)
-    setTimeout(() => setShouldAutoGenerate(true), 50)
-  }
-
-  const handleBackToSurvey = () => {
-    setIsPreviewing(false)
-    setShouldAutoGenerate(false)           // reset so next Preview click re-triggers AI
-    setAiPlanStatus('idle')
   }
 
   const prevStep = () => {
@@ -676,16 +657,16 @@ export function DynamicEstimatorForm() {
   }
 
   const renderSmartQuestionPanel = () => {
-    // Step 1 → visual project-type card grid
+    // Step 1 â†’ visual project-type card grid
     if (currentStep === 1) {
       return (
         <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background shadow-lg">
           <CardHeader className="space-y-1">
             <CardTitle className="text-xl" style={{ fontFamily: "var(--font-display)" }}>What are you building?</CardTitle>
-            <CardDescription>Choose a project type. The floor plan and all questions adapt instantly.</CardDescription>
+            <CardDescription>Choose a project type â€” questions and calculations adapt to your choice.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {projectTypes.map((pt) => {
                 const Icon = pt.icon
                 const isSelected = formData.projectType === pt.value
@@ -712,7 +693,15 @@ export function DynamicEstimatorForm() {
       )
     }
 
-    // Steps 2-3 → scrollable question list
+    // Steps 2-3 â†’ adaptive question panel (no floor plan)
+    const area = formData.length && formData.width
+      ? (formData.length * formData.width).toFixed(1) : null
+    const totalArea = area && formData.numberOfFloors && formData.numberOfFloors > 1
+      ? (parseFloat(area) * formData.numberOfFloors).toFixed(1) : null
+    const perimeter = formData.length && formData.width
+      ? (2 * (formData.length + formData.width)).toFixed(1) : null
+    const projLabel = projectTypes.find((p) => p.value === formData.projectType)?.label ?? "project"
+
     return (
     <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background shadow-lg">
       <CardHeader className="space-y-2">
@@ -721,94 +710,129 @@ export function DynamicEstimatorForm() {
         </CardTitle>
         <CardDescription>
           {currentStep === 2
-            ? "Enter your dimensions. The floor plan updates live as you type."
-            : "Set location, material quality, and which services to include."}
+            ? `Dimensions for your ${projLabel.toLowerCase()}. Calculations update as you type.`
+            : `Location and quality settings for your ${projLabel.toLowerCase()}.`}
         </CardDescription>
-        <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-          <div className="rounded-lg border border-border bg-background/70 px-3 py-2">
-            {formData.projectType ? projectTypes.find((projectType) => projectType.value === formData.projectType)?.label : "No type yet"}
-          </div>
-          <div className="rounded-lg border border-border bg-background/70 px-3 py-2">
-            {formData.qualityLevel || "standard"} quality
-          </div>
-          <div className="rounded-lg border border-border bg-background/70 px-3 py-2">
-            {smartQuestions.length} active prompts
-          </div>
+        {/* Context badges */}
+        <div className="flex flex-wrap gap-2">
+          <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+            {projLabel}
+          </span>
+          {formData.qualityLevel && (
+            <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs capitalize text-muted-foreground">
+              {formData.qualityLevel} quality
+            </span>
+          )}
+          <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs text-muted-foreground">
+            {smartQuestions.length} questions
+          </span>
         </div>
+        {/* Live stats â€” step 2 only, once dimensions start filling in */}
+        {currentStep === 2 && (area ?? perimeter) && (
+          <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-2.5">
+            <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
+              {area && (
+                <span>
+                  <span className="font-semibold text-primary">{area} mÂ²</span>{" "}
+                  <span className="text-muted-foreground">floor area</span>
+                </span>
+              )}
+              {totalArea && (
+                <span>
+                  <span className="font-semibold text-primary">{totalArea} mÂ²</span>{" "}
+                  <span className="text-muted-foreground">total ({formData.numberOfFloors} floors)</span>
+                </span>
+              )}
+              {perimeter && (
+                <span>
+                  <span className="font-semibold text-primary">{perimeter} m</span>{" "}
+                  <span className="text-muted-foreground">perimeter</span>
+                </span>
+              )}
+            </div>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[520px] rounded-xl border border-border bg-background/60">
-          <div className="space-y-3 p-4">
-            {smartQuestions.map((question, index) => {
-              const currentValue = formData[question.key]
-              const errorMessage = errors[String(question.key)]
+        <div className="space-y-3">
+          {smartQuestions.map((question, index) => {
+            const currentValue = formData[question.key]
+            const errorMessage = errors[String(question.key)]
+            const isAnswered = currentValue !== undefined && currentValue !== null && currentValue !== ""
 
-              return (
-                <div key={`${String(question.key)}-${index}`} className="rounded-xl border border-border bg-background p-4 shadow-sm">
-                  <p className="mb-1 text-xs font-medium uppercase tracking-[0.18em] text-primary/80">Prompt {index + 1}</p>
-                  <p className="text-sm font-semibold text-foreground">{question.title}</p>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{question.description}</p>
-
-                  <div className="mt-3 space-y-2">
-                    {question.type === "number" && (
-                      <Input
-                        type="number"
-                        min={question.min}
-                        max={question.max}
-                        step={question.stepValue}
-                        value={typeof currentValue === "number" ? currentValue : ""}
-                        onChange={(event) => {
-                          const parsed = question.stepValue && question.stepValue < 1
-                            ? parseFloat(event.target.value)
-                            : parseInt(event.target.value, 10)
-                          if (!Number.isNaN(parsed)) {
-                            updateField(question.key, parsed as never)
-                          }
-                        }}
-                        className="h-11 text-base"
-                      />
-                    )}
-
-                    {question.type === "select" && question.options && (
-                      <Select
-                        value={typeof currentValue === "string" ? currentValue : undefined}
-                        onValueChange={(value) => handleSelectAnswer(question, value)}
-                      >
-                        <SelectTrigger className="h-11 text-base">
-                          <SelectValue placeholder="Choose an option" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {question.options.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-
-                    {question.type === "boolean" && (
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button type="button" variant={currentValue === true ? "default" : "outline"} onClick={() => updateField(question.key, true as never)}>
-                          Yes
-                        </Button>
-                        <Button type="button" variant={currentValue === false ? "default" : "outline"} onClick={() => updateField(question.key, false as never)}>
-                          No
-                        </Button>
-                      </div>
-                    )}
-
-                    {errorMessage && <p className="text-xs text-destructive">{errorMessage}</p>}
-                  </div>
+            return (
+              <div
+                key={`${String(question.key)}-${index}`}
+                className={`rounded-xl border p-4 shadow-sm transition-colors ${
+                  isAnswered ? "border-primary/40 bg-primary/5" : "border-border bg-background"
+                }`}
+              >
+                <div className="mb-1 flex items-center justify-between">
+                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary/80">Q{index + 1}</p>
+                  {isAnswered && <CheckCircle2 className="h-4 w-4 text-primary" />}
                 </div>
-              )
-            })}
+                <p className="text-sm font-semibold text-foreground">{question.title}</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{question.description}</p>
 
-            {smartQuestions.length === 0 && (
-              <div className="rounded-xl border border-dashed border-border bg-background p-4 text-sm text-muted-foreground">
-                No more prompts are needed in this step. Continue to the next step.
+                <div className="mt-3 space-y-2">
+                  {question.type === "number" && (
+                    <Input
+                      type="number"
+                      min={question.min}
+                      max={question.max}
+                      step={question.stepValue}
+                      value={typeof currentValue === "number" ? currentValue : ""}
+                      onChange={(event) => {
+                        const parsed = question.stepValue && question.stepValue < 1
+                          ? parseFloat(event.target.value)
+                          : parseInt(event.target.value, 10)
+                        if (!Number.isNaN(parsed)) {
+                          updateField(question.key, parsed as never)
+                        }
+                      }}
+                      className="h-11 text-base"
+                    />
+                  )}
+
+                  {question.type === "select" && question.options && (
+                    <Select
+                      value={typeof currentValue === "string" ? currentValue : undefined}
+                      onValueChange={(value) => handleSelectAnswer(question, value)}
+                    >
+                      <SelectTrigger className="h-11 text-base">
+                        <SelectValue placeholder="Choose an option" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {question.options.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+
+                  {question.type === "boolean" && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button type="button" variant={currentValue === true ? "default" : "outline"} onClick={() => updateField(question.key, true as never)}>
+                        Yes
+                      </Button>
+                      <Button type="button" variant={currentValue === false ? "default" : "outline"} onClick={() => updateField(question.key, false as never)}>
+                        No
+                      </Button>
+                    </div>
+                  )}
+
+                  {errorMessage && <p className="text-xs text-destructive">{errorMessage}</p>}
+                </div>
               </div>
-            )}
-          </div>
-        </ScrollArea>
+            )
+          })}
+
+          {smartQuestions.length === 0 && (
+            <div className="rounded-xl border border-dashed border-border bg-background p-4 text-sm text-muted-foreground">
+              No more prompts are needed in this step. Continue to the next step.
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
     )
@@ -816,7 +840,7 @@ export function DynamicEstimatorForm() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      {/* ── Page header ─────────────────────────────────────────────────────── */}
+      {/* â”€â”€ Page header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="mb-8 text-center">
         <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-primary">
           <Calculator className="h-4 w-4" />
@@ -828,125 +852,7 @@ export function DynamicEstimatorForm() {
         <p className="mx-auto max-w-2xl text-lg text-muted-foreground">{t("estimator.subtitle")}</p>
       </div>
 
-      {/* ── FloorPlan2D — always rendered so internal AI state is preserved ── */}
-      {/* Visibility is controlled by the grid layout below */}
-
-      {isPreviewing ? (
-        /* ═══════════════════════════════════════════════════════════════════
-           PREVIEW MODE — AI floor plan + project summary + action buttons
-           ═══════════════════════════════════════════════════════════════════ */
-        <>
-          {/* Preview header */}
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-bold text-secondary" style={{ fontFamily: "var(--font-display)" }}>2D Floor Plan Preview</h2>
-              <p className="text-sm text-muted-foreground">AI-generated layout based on your project specifications. Go back to modify answers.</p>
-            </div>
-            <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={handleBackToSurvey} className="h-11 border-2 hover:border-primary">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Modify Answers
-              </Button>
-              <Button type="button" onClick={() => void handleSubmit()} disabled={isCalculating} className="h-11 text-base shadow-lg">
-                {isCalculating ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Calculating…</> : <><Calculator className="mr-2 h-4 w-4" />Get Estimate</>}
-              </Button>
-            </div>
-          </div>
-
-          {/* AI status banner */}
-          {aiPlanStatus !== "idle" && (
-            <div className={`mb-4 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
-              aiPlanStatus === "loading" ? "border-primary/30 bg-primary/5 text-primary" :
-              aiPlanStatus === "success" ? "border-green-500/30 bg-green-500/5 text-green-700 dark:text-green-400" :
-              "border-destructive/30 bg-destructive/5 text-destructive"
-            }`}>
-              {aiPlanStatus === "loading" && <Loader2 className="h-4 w-4 animate-spin" />}
-              {aiPlanStatus === "success" && <CheckCircle2 className="h-4 w-4" />}
-              {aiPlanStatus === "error" && <Bot className="h-4 w-4" />}
-              <span>
-                {aiPlanStatus === "loading" ? "AI is generating your customised floor plan…" :
-                 aiPlanStatus === "success" ? "AI floor plan ready — based on all your project details" :
-                 "Using smart default layout (AI unavailable)"}
-              </span>
-              {aiPlanDetails && <span className="ml-auto text-xs opacity-70">{aiPlanDetails}</span>}
-            </div>
-          )}
-
-          {/* Main preview grid: floor plan (left) + project summary (right) */}
-          <div className="grid gap-6 xl:grid-cols-[2fr_1fr] xl:items-start">
-            <FloorPlan2D
-              projectType={formData.projectType || "house"}
-              length={formData.length}
-              width={formData.width}
-              height={formData.height}
-              numberOfRooms={formData.numberOfRooms}
-              numberOfBathrooms={formData.numberOfBathrooms}
-              numberOfFloors={formData.numberOfFloors}
-              layoutIntent={formData.layoutIntent}
-              hasBalcony={formData.hasBalcony}
-              autoGenerate={shouldAutoGenerate}
-              onDimensionChange={(field, value) => updateField(field, value as never)}
-              onStatusChange={(status) => setAiPlanStatus(status)}
-            />
-
-            {/* Project summary card */}
-            <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background shadow-lg">
-              <CardHeader>
-                <CardTitle style={{ fontFamily: "var(--font-display)" }}>Project Summary</CardTitle>
-                <CardDescription>Review your specifications before calculating the estimate.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Project type */}
-                <div className="flex items-center gap-3 rounded-lg border border-border bg-background px-3 py-2">
-                  {(() => { const pt = projectTypes.find(p => p.value === formData.projectType); const Icon = pt?.icon || Home; return <Icon className="h-5 w-5 text-primary" /> })()}
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Project Type</p>
-                    <p className="text-sm font-semibold">{projectTypes.find(p => p.value === formData.projectType)?.label || "—"}</p>
-                  </div>
-                </div>
-
-                {/* Dimensions */}
-                <div className="rounded-lg border border-border bg-background px-3 py-2">
-                  <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Dimensions</p>
-                  <p className="text-sm font-semibold">
-                    {formData.length ?? "—"}m × {formData.width ?? "—"}m, {formData.height ?? "—"}m height
-                  </p>
-                  {formData.numberOfFloors && <p className="text-xs text-muted-foreground">{formData.numberOfFloors} floor{(formData.numberOfFloors ?? 1) > 1 ? "s" : ""}{formData.numberOfRooms ? ` · ${formData.numberOfRooms} rooms` : ""}{formData.numberOfBathrooms ? ` · ${formData.numberOfBathrooms} bath` : ""}</p>}
-                </div>
-
-                {/* Location & quality */}
-                <div className="rounded-lg border border-border bg-background px-3 py-2">
-                  <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Location & Quality</p>
-                  <p className="text-sm font-semibold">{formData.location || "—"}{formData.zone ? ` (${formData.zone})` : ""}</p>
-                  <p className="text-xs text-muted-foreground capitalize">{formData.qualityLevel || "standard"} quality</p>
-                </div>
-
-                {/* Services */}
-                <div className="rounded-lg border border-border bg-background px-3 py-2">
-                  <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">Services Included</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {formData.hasElectricity && <span className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs text-primary">Electrical</span>}
-                    {formData.hasPlumbing && <span className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs text-primary">Plumbing</span>}
-                    {formData.hasFinishing && <span className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs text-primary">Finishing</span>}
-                    {!formData.hasElectricity && !formData.hasPlumbing && !formData.hasFinishing && <span className="text-xs text-muted-foreground">Structure only</span>}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {errors.submit && (
-            <div className="mt-4 rounded-lg border-2 border-destructive bg-destructive/10 p-4 text-center text-destructive">
-              {errors.submit}
-            </div>
-          )}
-        </>
-      ) : (
-        /* ═══════════════════════════════════════════════════════════════════
-           SURVEY MODE — step indicator + floor plan + question panel + nav
-           ═══════════════════════════════════════════════════════════════════ */
-        <>
-          {/* Step indicator */}
+      {/* Step indicator */}
           <div className="mb-10">
             <div className="mb-4 flex flex-wrap justify-between gap-2">
               {[1, 2, 3].map((step) => (
@@ -971,64 +877,45 @@ export function DynamicEstimatorForm() {
             <Progress value={progress} className="h-3 rounded-full" />
           </div>
 
-          {/* Floor plan + question panel */}
-          <div className={`mb-8 grid gap-6 xl:items-start ${currentStep === 1 ? "xl:grid-cols-1" : "xl:grid-cols-[1.45fr_0.95fr]"}`}>
-            {currentStep !== 1 && (
-              <FloorPlan2D
-                projectType={formData.projectType || "house"}
-                length={formData.length}
-                width={formData.width}
-                height={formData.height}
-                numberOfRooms={formData.numberOfRooms}
-                numberOfBathrooms={formData.numberOfBathrooms}
-                numberOfFloors={formData.numberOfFloors}
-                layoutIntent={formData.layoutIntent}
-                hasBalcony={formData.hasBalcony}
-                autoGenerate={false}
-                onDimensionChange={(field, value) => updateField(field, value as never)}
-                onStatusChange={(status) => setAiPlanStatus(status)}
-              />
-            )}
-            <div className={currentStep === 1 ? "mx-auto w-full max-w-2xl" : "flex flex-col gap-4"}>
-              {renderSmartQuestionPanel()}
-            </div>
-          </div>
+      {/* Question panel â€” full-width centred */}
+      <div className="mb-6 mx-auto w-full max-w-2xl">
+        {renderSmartQuestionPanel()}
+      </div>
 
-          {/* Navigation form */}
-          <form onSubmit={(event) => { event.preventDefault(); nextStep() }}>
-            <div className="space-y-6">
-              {renderStepContent()}
+      {/* Form: advanced options (step 3) + navigation */}
+      <form onSubmit={(event) => { event.preventDefault(); nextStep() }}>
+        <div className="mx-auto max-w-2xl space-y-6">
+          {renderStepContent()}
 
               <div className="flex flex-col justify-between gap-3 pt-4 sm:flex-row sm:gap-4">
-                {currentStep > 1 && (
-                  <Button type="button" variant="outline" onClick={prevStep} className="h-12 flex-1 border-2 hover:border-primary" size="lg">
-                    <ArrowLeft className="mr-2 h-5 w-5" />
-                    {t("estimator.previous") || "Previous"}
-                  </Button>
-                )}
+          {currentStep > 1 && (
+              <Button type="button" variant="outline" onClick={prevStep} className="h-12 flex-1 border-2 hover:border-primary" size="lg">
+                <ArrowLeft className="mr-2 h-5 w-5" />
+                {t("estimator.previous") || "Previous"}
+              </Button>
+            )}
 
-                {currentStep < totalSteps ? (
-                  <Button type="submit" className="ml-auto h-12 flex-1 text-base shadow-lg hover:shadow-xl" size="lg">
-                    {t("estimator.next") || "Next"}
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                ) : (
-                  <Button type="button" onClick={handlePreviewPlan} className="ml-auto h-12 flex-1 text-base shadow-lg hover:shadow-xl" size="lg">
-                    <Sparkles className="mr-2 h-5 w-5" />
-                    Preview Plan
-                  </Button>
-                )}
-              </div>
+            {currentStep < totalSteps ? (
+              <Button type="submit" className="ml-auto h-12 flex-1 text-base shadow-lg hover:shadow-xl" size="lg">
+                {t("estimator.next") || "Next"}
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            ) : (
+              <Button type="button" onClick={() => void handleSubmit()} disabled={isCalculating} className="ml-auto h-12 flex-1 text-base shadow-lg hover:shadow-xl" size="lg">
+                {isCalculating
+                  ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Calculatingâ€¦</>
+                  : <><Calculator className="mr-2 h-5 w-5" />Get Estimate</>}
+              </Button>
+            )}
+          </div>
 
-              {errors.submit && (
-                <div className="rounded-lg border-2 border-destructive bg-destructive/10 p-4 text-center text-destructive">
-                  {errors.submit}
-                </div>
-              )}
+          {errors.submit && (
+            <div className="rounded-lg border-2 border-destructive bg-destructive/10 p-4 text-center text-destructive">
+              {errors.submit}
             </div>
-          </form>
-        </>
-      )}
+          )}
+        </div>
+      </form>
     </div>
   )
 }

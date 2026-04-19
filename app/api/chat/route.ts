@@ -34,8 +34,9 @@ Do not answer questions unrelated to construction, building, or home improvement
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as { messages?: ChatMessage[] }
+    const body = await request.json() as { messages?: ChatMessage[]; locale?: string }
     const messages: ChatMessage[] = body.messages ?? []
+    const locale = typeof body.locale === 'string' ? body.locale : 'en'
 
     if (!Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: 'messages array is required' }, { status: 400 })
@@ -56,6 +57,10 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    const langInstruction =
+      locale === 'fr' ? 'Réponds toujours en français, de manière claire et concise.' :
+      'Respond in English.'
+
     const response = await fetch(`${provider.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -67,7 +72,9 @@ export async function POST(request: NextRequest) {
         temperature: 0.6,
         max_tokens: 600,
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: `${SYSTEM_PROMPT}
+
+${langInstruction}` },
           ...safeMessages,
         ],
       }),

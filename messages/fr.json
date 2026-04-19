@@ -1,4 +1,25 @@
 {
+  "chat": {
+    "title": "BuildCalc AI",
+    "subtitle": "Assistant construction",
+    "welcome": "Bonjour ! Je suis BuildCalc AI 👷 Posez-moi vos questions sur les matériaux, les coûts ou les bonnes pratiques de construction.",
+    "cleared": "Chat effacé. Comment puis-je vous aider avec votre projet ?",
+    "placeholder": "Posez une question sur les matériaux, coûts…",
+    "clearTitle": "Effacer le chat",
+    "minimise": "Réduire",
+    "expand": "Agrandir",
+    "close": "Fermer",
+    "openLabel": "Ouvrir le chat IA",
+    "noMore": "Aucune question supplémentaire nécessaire.",
+    "connectionError": "Erreur de connexion. Vérifiez votre connexion internet et réessayez.",
+    "fallback": "Désolé, je n'ai pas pu obtenir de réponse pour le moment. Veuillez réessayer.",
+    "starters": [
+      "Combien de ciment faut-il pour une dalle de 10×8m ?",
+      "Quel est le meilleur matériau de toiture pour un climat humide ?",
+      "Comment réduire les coûts de matériaux pour ma maison ?",
+      "Que contient une estimation standard ?"
+    ]
+  },
   "nav": {
     "estimator": "Estimateur",
     "dashboard": "Tableau de bord",
