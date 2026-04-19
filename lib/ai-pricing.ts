@@ -1,5 +1,17 @@
 import type { EstimateResult } from './calculations'
 
+// ─── Provider selection ───────────────────────────────────────────────────────
+// Priority: GITHUB_TOKEN (Copilot) → OPENAI_API_KEY → fallback
+function getProvider(): { apiKey: string; baseUrl: string; model: string } | null {
+  if (process.env.GITHUB_TOKEN) {
+    return { apiKey: process.env.GITHUB_TOKEN, baseUrl: 'https://models.inference.ai.azure.com', model: 'gpt-4o-mini' }
+  }
+  if (process.env.OPENAI_API_KEY) {
+    return { apiKey: process.env.OPENAI_API_KEY, baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini' }
+  }
+  return null
+}
+
 // Location-based price multipliers using AI-powered regional analysis
 const locationMultipliers: Record<string, number> = {
   "United States - Northeast": 1.25,
@@ -69,22 +81,22 @@ async function getAIPriceAdjustment(
   location: string,
   projectType: string
 ): Promise<AIAdjustment | null> {
-  const apiKey = process.env.OPENAI_API_KEY
-  
-  if (!apiKey) {
-    console.log('OpenAI API key not configured, using base multipliers')
+  const provider = getProvider()
+
+  if (!provider) {
+    console.log('[AI Pricing] No API key configured, using base multipliers')
     return null
   }
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch(`${provider.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${provider.apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: provider.model,
         messages: [
           {
             role: 'system',
@@ -101,7 +113,7 @@ async function getAIPriceAdjustment(
     })
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`)
+      throw new Error(`AI API error: ${response.status}`)
     }
 
     const data = await response.json()
@@ -121,7 +133,7 @@ async function getAIPriceAdjustment(
 
     return parsed
   } catch (error) {
-    console.error('OpenAI API call failed:', error)
+    console.error('[AI Pricing] API call failed:', error)
     return null
   }
 }
@@ -133,21 +145,21 @@ export async function getSeasonalPricing(
   materials: string[],
   location: string
 ): Promise<{ material: string; advice: string }[]> {
-  const apiKey = process.env.OPENAI_API_KEY
-  
-  if (!apiKey) {
+  const provider = getProvider()
+
+  if (!provider) {
     return []
   }
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch(`${provider.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${provider.apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: provider.model,
         messages: [
           {
             role: 'system',

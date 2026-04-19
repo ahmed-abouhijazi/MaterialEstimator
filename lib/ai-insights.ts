@@ -1,5 +1,17 @@
 import type { ProjectType } from './calculations'
 
+// ─── Provider selection ───────────────────────────────────────────────────────
+// Priority: GITHUB_TOKEN (Copilot) → OPENAI_API_KEY → fallback
+function getProvider(): { apiKey: string; baseUrl: string; model: string } | null {
+  if (process.env.GITHUB_TOKEN) {
+    return { apiKey: process.env.GITHUB_TOKEN, baseUrl: 'https://models.inference.ai.azure.com', model: 'gpt-4o-mini' }
+  }
+  if (process.env.OPENAI_API_KEY) {
+    return { apiKey: process.env.OPENAI_API_KEY, baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini' }
+  }
+  return null
+}
+
 export interface MarketInsight {
   insight: string
   category: 'cost' | 'timing' | 'material' | 'general'
@@ -14,21 +26,21 @@ export async function getMarketInsights(
   location: string,
   budget?: number
 ): Promise<MarketInsight[]> {
-  const apiKey = process.env.OPENAI_API_KEY
-  
-  if (!apiKey) {
+  const provider = getProvider()
+
+  if (!provider) {
     return getFallbackInsights(projectType, location)
   }
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch(`${provider.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${provider.apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: provider.model,
         messages: [
           {
             role: 'system',

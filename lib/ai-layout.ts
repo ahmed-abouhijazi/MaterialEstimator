@@ -1,5 +1,17 @@
 import type { ProjectType, QualityLevel } from './calculations'
 
+// ─── Provider selection ───────────────────────────────────────────────────────
+// Priority: GITHUB_TOKEN (Copilot) → OPENAI_API_KEY → fallback
+function getProvider(): { apiKey: string; baseUrl: string; model: string } | null {
+  if (process.env.GITHUB_TOKEN) {
+    return { apiKey: process.env.GITHUB_TOKEN, baseUrl: 'https://models.inference.ai.azure.com', model: 'gpt-4o-mini' }
+  }
+  if (process.env.OPENAI_API_KEY) {
+    return { apiKey: process.env.OPENAI_API_KEY, baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini' }
+  }
+  return null
+}
+
 export interface AILayoutInput {
   projectType: ProjectType
   estimationMode: 'simple' | 'advanced'
@@ -104,21 +116,21 @@ function fallbackLayout(input: AILayoutInput): AILayoutSuggestion {
 }
 
 export async function generateAILayout(input: AILayoutInput): Promise<AILayoutSuggestion> {
-  const apiKey = process.env.OPENAI_API_KEY
+  const provider = getProvider()
 
-  if (!apiKey) {
+  if (!provider) {
     return fallbackLayout(input)
   }
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch(`${provider.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${provider.apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: provider.model,
         temperature: 0.45,
         max_tokens: 500,
         response_format: { type: 'json_object' },
