@@ -30,8 +30,9 @@ export async function GET() {
     }
 
     // Check subscription status
+    const isActiveState = (user.subscriptionStatus || 'none').startsWith('active')
     const hasActiveSubscription = 
-      user.subscriptionStatus === 'active' && 
+      isActiveState && 
       user.subscriptionEndDate &&
       new Date(user.subscriptionEndDate) > new Date()
 

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Settings, Globe, DollarSign, MapPin, User, CheckCircle, AlertCircle } from "lucide-react"
+import { Settings, Globe, DollarSign, MapPin, User, CheckCircle, AlertCircle, CreditCard, Clock, ShieldCheck, Loader2 } from "lucide-react"
 
 export function SettingsContent() {
   const { data: session } = useSession()
@@ -16,6 +16,18 @@ export function SettingsContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(true)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+  const [subscriptionMessage, setSubscriptionMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+  const [subscription, setSubscription] = useState<null | {
+    plan: string
+    status: string
+    subscriptionStatus: string | null
+    subscriptionEndDate: string | null
+    daysRemaining: number | null
+    isActive: boolean
+    isExpired: boolean
+  }>(null)
+  const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(false)
+  const [subscriptionAction, setSubscriptionAction] = useState<string | null>(null)
   
   const [formData, setFormData] = useState({
     name: '',
@@ -66,6 +78,61 @@ export function SettingsContent() {
       }))
     }
   }, [session])
+
+  const loadSubscription = async () => {
+    if (!session?.user) return
+    try {
+      setIsSubscriptionLoading(true)
+      setSubscriptionMessage(null)
+      const response = await fetch('/api/subscription/manage')
+      if (!response.ok) {
+        setSubscriptionMessage({ type: 'error', text: 'Unable to load subscription details' })
+        return
+      }
+      const data = await response.json()
+      setSubscription(data)
+    } catch (error) {
+      setSubscriptionMessage({ type: 'error', text: 'Unable to load subscription details' })
+    } finally {
+      setIsSubscriptionLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    void loadSubscription()
+  }, [session])
+
+  const formatDate = (value: string | null | undefined) => {
+    if (!value) return 'No renewal date'
+    return new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(value))
+  }
+
+  const handleSubscriptionAction = async (action: 'cancel' | 'resume' | 'extend') => {
+    if (!session?.user) return
+    try {
+      setSubscriptionAction(action)
+      setSubscriptionMessage(null)
+      const response = await fetch('/api/subscription/manage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      })
+
+      if (!response.ok) {
+        setSubscriptionMessage({ type: 'error', text: 'Could not update subscription' })
+        return
+      }
+
+      const data = await response.json()
+      setSubscription((prev) => prev ? { ...prev, subscriptionStatus: data.status, subscriptionEndDate: data.subscriptionEndDate } : prev)
+      setSubscriptionMessage({ type: 'success', text: data.message || 'Subscription updated' })
+      await loadSubscription()
+    } catch (error) {
+      setSubscriptionMessage({ type: 'error', text: 'Could not update subscription' })
+    } finally {
+      setSubscriptionAction(null)
+    }
+  }
 
   useEffect(() => {
     setFormData(prev => ({
@@ -174,6 +241,104 @@ export function SettingsContent() {
                 className="bg-muted"
               />
               <p className="text-xs text-muted-foreground">Contact support to change your email</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Subscription */}
+        <Card className="border-2">
+          <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Subscription
+              </CardTitle>
+              <CardDescription>See your plan status and manage renewals</CardDescription>
+            </div>
+            {subscription && (
+              <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
+                subscription.isActive
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : subscription.isExpired
+                    ? 'bg-amber-100 text-amber-800'
+                    : 'bg-slate-100 text-slate-800'
+              }`}>
+                <ShieldCheck className="h-4 w-4" />
+                {subscription.isActive ? 'Active' : subscription.isExpired ? 'Expired' : 'Inactive'}
+              </div>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {isSubscriptionLoading && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading subscription...
+              </div>
+            )}
+
+            {!subscription && !isSubscriptionLoading && (
+              <div className="text-sm text-muted-foreground">
+                No subscription data yet. Pick a plan to unlock full access.
+              </div>
+            )}
+
+            {subscription && (
+              <div className="grid gap-3 md:grid-cols-3">
+                <div className="rounded-lg border bg-muted/40 p-4">
+                  <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Plan</p>
+                  <p className="text-lg font-semibold text-secondary">{subscription.plan ? subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1) : 'Free'}</p>
+                </div>
+                <div className="rounded-lg border bg-muted/40 p-4">
+                  <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Renewal</p>
+                  <div className="flex items-center gap-2 text-secondary">
+                    <Clock className="h-4 w-4" />
+                    <span>{subscription.subscriptionEndDate ? formatDate(subscription.subscriptionEndDate) : 'Not set'}</span>
+                  </div>
+                  {subscription.daysRemaining !== null && (
+                    <p className="text-xs text-muted-foreground">{subscription.daysRemaining} days remaining</p>
+                  )}
+                </div>
+                <div className="rounded-lg border bg-muted/40 p-4">
+                  <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Status</p>
+                  <p className="text-lg font-semibold text-secondary">{subscription.isActive ? 'Active' : subscription.isExpired ? 'Expired' : 'Inactive'}</p>
+                  <p className="text-xs text-muted-foreground">{subscription.subscriptionStatus || 'none'}</p>
+                </div>
+              </div>
+            )}
+
+            {subscriptionMessage && (
+              <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
+                subscriptionMessage.type === 'success'
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                  : 'border-red-200 bg-red-50 text-red-800'
+              }`}>
+                {subscriptionMessage.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                <span>{subscriptionMessage.text}</span>
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-3">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => handleSubscriptionAction('extend')}
+                disabled={isSubscriptionLoading || subscriptionAction !== null}
+              >
+                {subscriptionAction === 'extend' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Extend 30 days
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleSubscriptionAction(subscription?.isActive ? 'cancel' : 'resume')}
+                disabled={isSubscriptionLoading || subscriptionAction !== null}
+              >
+                {subscriptionAction && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {subscription?.isActive ? 'Cancel subscription' : 'Resume subscription'}
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => window.location.assign('/pricing')}>
+                View plans
+              </Button>
             </div>
           </CardContent>
         </Card>

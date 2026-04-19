@@ -23,6 +23,15 @@ export interface ProjectInput {
   qualityLevel: QualityLevel
   estimationMode?: EstimationMode
   zone?: "urban" | "rural"
+
+  // 3D + layout preferences (used by planner/AI hints)
+  layoutIntent?: "open" | "balanced" | "zoned"
+  styleMood?: "modern" | "warm" | "scandi" | "industrial"
+  furnitureDensity?: "minimal" | "balanced" | "cozy"
+  lightingMood?: "bright" | "neutral" | "cozy"
+  hasBalcony?: boolean
+  pro3dMode?: boolean
+  showFurniture?: boolean
   
   // Advanced mode fields - General
   numberOfRooms?: number
@@ -173,614 +182,341 @@ function calculateConcreteVolume(area: number, thickness: number): number {
 
 export function calculateMaterials(input: ProjectInput): EstimateResult {
   const materials: MaterialItem[] = []
-  const { projectType, length, width, height, qualityLevel, estimationMode = 'simple', numberOfRooms, numberOfBathrooms, numberOfFloors, hasBasement, hasGarage, kitchenSize } = input
+  const {
+    projectType,
+    length,
+    width,
+    height,
+    qualityLevel,
+    estimationMode = "simple",
+    numberOfRooms,
+    numberOfBathrooms,
+    numberOfFloors,
+    hasBasement,
+    hasGarage,
+    kitchenSize,
+    structureType,
+    wallType,
+    roofType,
+    hasElectricity,
+    hasPlumbing,
+    hasFinishing,
+    floorCovering,
+    roomType,
+    electricalPoints,
+    foundationType,
+    foundationDepth,
+    soilType,
+    reinforcementRate,
+    concreteClass,
+    wallThickness,
+    wallNeedsFooting,
+    reinforcement,
+    wallFinish,
+    roofSlope,
+    needsLoadBearing,
+    needsInsulation,
+    needsWaterproofing,
+    connectsToExisting,
+    needsStructuralReinforcement,
+    matchExistingFinishes,
+    needsDemolition,
+    replaceElectrical,
+    replacePlumbing,
+    renovationLevel,
+    zone,
+  } = input
 
   const floorArea = calculateFloorArea(length, width)
-  const wallArea = calculateWallArea(length, width, height)
-  const roofArea = calculateRoofArea(length, width)
-  
-  // Use advanced inputs or defaults
-  const bathroomsCount = numberOfBathrooms || Math.max(1, Math.floor(floorArea / 50))
-  const roomsCount = numberOfRooms || Math.max(2, Math.floor(floorArea / 15))
-  const floorsCount = numberOfFloors || 1
+  const perimeter = 2 * (length + width)
+  const baseWallArea = calculateWallArea(length, width, height)
+  const baseRoofArea = calculateRoofArea(length, width)
 
-  // Calculate materials based on project type
+  const floorsCount = Math.max(1, numberOfFloors || 1)
+  const roomsCount = Math.max(1, numberOfRooms || Math.ceil((floorArea * floorsCount) / 20))
+  const bathroomsCount = Math.max(1, numberOfBathrooms || Math.ceil(roomsCount / 3))
+  const advancedModeBoost = estimationMode === "advanced" ? 1.1 : 1
+  const zoneMultiplier = zone === "urban" ? 1.08 : zone === "rural" ? 0.95 : 1
+
+  const structureFactor =
+    structureType === "wood"
+      ? 0.8
+      : structureType === "steel"
+        ? 0.95
+        : structureType === "mixed"
+          ? 0.9
+          : 1
+
+  const wallFactor =
+    wallType === "bricks"
+      ? 0.95
+      : wallType === "wood_frame"
+        ? 0.62
+        : wallType === "stone"
+          ? 1.18
+          : 1
+
+  const roofFactor =
+    roofType === "pitched"
+      ? 1.18
+      : roofType === "mansard"
+        ? 1.3
+        : 1
+
+  const floorAreaTotal = floorArea * floorsCount
+  const wallAreaGross = baseWallArea * floorsCount
+  const openingRatio = Math.min(0.24, Math.max(0.1, 0.1 + roomsCount * 0.005 + bathroomsCount * 0.004))
+  const wallAreaNet = wallAreaGross * (1 - openingRatio)
+  const roofArea = baseRoofArea * roofFactor
+
+  const addMaterial = (
+    name: string,
+    quantity: number,
+    unit: string,
+    unitPrice: number,
+    category: string,
+  ) => {
+    const safeQuantity = Math.max(0, Math.round(quantity * 100) / 100)
+    if (safeQuantity <= 0) return
+    materials.push({
+      name,
+      quantity: safeQuantity,
+      unit,
+      unitPrice,
+      totalPrice: Math.round(safeQuantity * unitPrice * 100) / 100,
+      category,
+    })
+  }
+
   switch (projectType) {
-    case "house":
-      // Foundation (slab 0.15m thick) - FIXED: More realistic cement calculation
-      const foundationVolume = calculateConcreteVolume(floorArea, 0.15)
-      const cementBagsFoundation = Math.ceil(foundationVolume * 6.5) // ~6.5 bags per m³
-      
-      // FIXED: Add cement for columns and footings (review mentioned 130-160 bags)
-      const additionalStructuralCement = Math.ceil(floorArea * 0.8) // Extra for columns/footings
-      const totalCementBags = cementBagsFoundation + additionalStructuralCement
-      
-      materials.push({
-        name: "Cement (50kg bags)",
-        quantity: totalCementBags,
-        unit: "bags",
-        unitPrice: basePrices.cement[qualityLevel],
-        totalPrice: totalCementBags * basePrices.cement[qualityLevel],
-        category: "Foundation",
-      })
+    case "house": {
+      const foundationTypeFactor =
+        foundationType === "strip"
+          ? 0.9
+          : foundationType === "raft"
+            ? 1.2
+            : foundationType === "piles"
+              ? 1.35
+              : 1
 
-      // Sand for foundation
-      const sandFoundation = Math.ceil(foundationVolume * 0.45) // m³
-      materials.push({
-        name: "Sand",
-        quantity: sandFoundation,
-        unit: "m³",
-        unitPrice: basePrices.sand[qualityLevel],
-        totalPrice: sandFoundation * basePrices.sand[qualityLevel],
-        category: "Foundation",
-      })
+      const complexityFactor =
+        1 +
+        (floorsCount - 1) * 0.12 +
+        (hasBasement ? 0.1 : 0) +
+        (hasGarage ? 0.05 : 0) +
+        (kitchenSize === "large" ? 0.04 : kitchenSize === "medium" ? 0.02 : 0)
 
-      // Gravel/Aggregate
-      const gravel = Math.ceil(foundationVolume * 0.9) // m³
-      materials.push({
-        name: "Gravel/Aggregate",
-        quantity: gravel,
-        unit: "m³",
-        unitPrice: basePrices.gravel[qualityLevel],
-        totalPrice: gravel * basePrices.gravel[qualityLevel],
-        category: "Foundation",
-      })
+      const foundationThickness = 0.14 * foundationTypeFactor
+      const foundationVolume = calculateConcreteVolume(floorArea, foundationThickness) * complexityFactor
 
-      // Steel reinforcement - FIXED: Reduced from 35kg to 25-30kg per m² (review: 2.5-3.5 tons for 100m²)
-      const steel = Math.ceil(floorArea * 0.028 * 10) / 10 // ~28kg per m² = 2.8 tons for 100m²
-      materials.push({
-        name: "Steel Reinforcement",
-        quantity: steel,
-        unit: "tons",
-        unitPrice: basePrices.steel[qualityLevel],
-        totalPrice: steel * basePrices.steel[qualityLevel],
-        category: "Structure",
-      })
+      addMaterial("Cement (50kg bags)", foundationVolume * 7.1 * structureFactor, "bags", basePrices.cement[qualityLevel], "Foundation")
+      addMaterial("Sand", foundationVolume * 0.52, "m³", basePrices.sand[qualityLevel], "Foundation")
+      addMaterial("Gravel/Aggregate", foundationVolume * 0.95, "m³", basePrices.gravel[qualityLevel], "Foundation")
+      addMaterial(
+        "Steel Reinforcement",
+        floorAreaTotal * (0.025 + (floorsCount - 1) * 0.004) * structureFactor,
+        "tons",
+        basePrices.steel[qualityLevel],
+        "Structure",
+      )
 
-      // Blocks/Bricks for walls
-      const blocks = Math.ceil(wallArea * 12.5) // ~12.5 blocks per m²
-      materials.push({
-        name: "Concrete Blocks",
-        quantity: blocks,
-        unit: "pieces",
-        unitPrice: basePrices.blocks[qualityLevel],
-        totalPrice: blocks * basePrices.blocks[qualityLevel],
-        category: "Walls",
-      })
+      if (wallType === "wood_frame") {
+        addMaterial("Timber (structure)", wallAreaNet * 18, "linear m", basePrices.wood[qualityLevel], "Walls")
+        addMaterial("Drywall Sheets", wallAreaNet / 2.8, "sheets", basePrices.drywall[qualityLevel], "Walls")
+      } else {
+        addMaterial("Concrete Blocks", wallAreaNet * 12.2 * wallFactor, "pieces", basePrices.blocks[qualityLevel], "Walls")
+        addMaterial("Cement for Mortar (50kg bags)", wallAreaNet * 0.23 * wallFactor, "bags", basePrices.cement[qualityLevel], "Walls")
+      }
+      addMaterial("Sand for Mortar", wallAreaNet * 0.022 * wallFactor, "m³", basePrices.sand[qualityLevel], "Walls")
 
-      // Cement for walls (mortar)
-      const cementWalls = Math.ceil(wallArea * 0.25) // bags
-      materials.push({
-        name: "Cement for Mortar (50kg bags)",
-        quantity: cementWalls,
-        unit: "bags",
-        unitPrice: basePrices.cement[qualityLevel],
-        totalPrice: cementWalls * basePrices.cement[qualityLevel],
-        category: "Walls",
-      })
+      addMaterial("Roofing Sheets", roofArea / 2.4, "sheets", basePrices.roofing[qualityLevel], "Roofing")
+      addMaterial("Timber (roof structure)", roofArea * 5.8, "linear m", basePrices.wood[qualityLevel], "Roofing")
 
-      // Sand for mortar
-      const sandMortar = Math.ceil(wallArea * 0.02) // m³
-      materials.push({
-        name: "Sand for Mortar",
-        quantity: sandMortar,
-        unit: "m³",
-        unitPrice: basePrices.sand[qualityLevel],
-        totalPrice: sandMortar * basePrices.sand[qualityLevel],
-        category: "Walls",
-      })
-
-      // Roofing
-      const roofingSheets = Math.ceil(roofArea / 2.5) // sheets (~2.5m² per sheet)
-      materials.push({
-        name: "Roofing Sheets",
-        quantity: roofingSheets,
-        unit: "sheets",
-        unitPrice: basePrices.roofing[qualityLevel],
-        totalPrice: roofingSheets * basePrices.roofing[qualityLevel],
-        category: "Roofing",
-      })
-
-      // Wood for roof structure - FIXED: Reduced from 0.015 to realistic 0.005-0.007 (review: 400-700lm for 100m²)
-      const woodRoof = Math.ceil(roofArea * 0.006 * 1000) // linear meters (~600lm for 100m²)
-      materials.push({
-        name: "Timber (roof structure)",
-        quantity: woodRoof,
-        unit: "linear m",
-        unitPrice: basePrices.wood[qualityLevel],
-        totalPrice: woodRoof * basePrices.wood[qualityLevel],
-        category: "Roofing",
-      })
-
-      // Advanced mode additions
-      if (estimationMode === 'advanced') {
-        // Formwork for foundation
-        const formworkArea = Math.ceil((2 * (length + width) * 0.15) + (floorArea * 0.1)) // perimeter + some horizontal
-        materials.push({
-          name: "Formwork (rental/materials)",
-          quantity: formworkArea,
-          unit: "m²",
-          unitPrice: basePrices.formwork[qualityLevel],
-          totalPrice: formworkArea * basePrices.formwork[qualityLevel],
-          category: "Foundation",
-        })
-
-        // Waterproofing
-        materials.push({
-          name: "Waterproofing Membrane",
-          quantity: Math.ceil(floorArea * 1.1),
-          unit: "m²",
-          unitPrice: basePrices.waterproofing[qualityLevel],
-          totalPrice: Math.ceil(floorArea * 1.1) * basePrices.waterproofing[qualityLevel],
-          category: "Foundation",
-        })
+      if (estimationMode === "advanced") {
+        addMaterial("Formwork (rental/materials)", (perimeter * 0.3 + floorArea * 0.15) * complexityFactor, "m²", basePrices.formwork[qualityLevel], "Foundation")
+        addMaterial("Waterproofing Membrane", floorAreaTotal * 1.08, "m²", basePrices.waterproofing[qualityLevel], "Foundation")
       }
 
-      // Electrical wiring
-      const wiring = Math.ceil(floorArea * 5) // meters of wire
-      materials.push({
-        name: "Electrical Wiring",
-        quantity: wiring,
-        unit: "meters",
-        unitPrice: basePrices.wiring[qualityLevel],
-        totalPrice: wiring * basePrices.wiring[qualityLevel],
-        category: "Electrical",
-      })
+      if (hasElectricity !== false) {
+        const wireBase = floorAreaTotal * (estimationMode === "advanced" ? 5.8 : 4.4)
+        const electricalPointsCount = Math.max(roomsCount * 4 + bathroomsCount * 2 + floorsCount * 2, electricalPoints || 0)
+        addMaterial("Electrical Wiring", wireBase + electricalPointsCount * 2.2, "meters", basePrices.wiring[qualityLevel], "Electrical")
 
-      // Advanced electrical components
-      if (estimationMode === 'advanced') {
-        materials.push({
-          name: "Electrical Panel",
-          quantity: 1,
-          unit: "unit",
-          unitPrice: basePrices.electricalPanel[qualityLevel],
-          totalPrice: basePrices.electricalPanel[qualityLevel],
-          category: "Electrical",
-        })
-
-        const breakersCount = Math.ceil(floorArea / 20) // ~1 breaker per 20m²
-        materials.push({
-          name: "Circuit Breakers",
-          quantity: breakersCount,
-          unit: "units",
-          unitPrice: basePrices.breakers[qualityLevel],
-          totalPrice: breakersCount * basePrices.breakers[qualityLevel],
-          category: "Electrical",
-        })
-
-        const outletsCount = Math.ceil(floorArea / 10) // ~1 outlet per 10m²
-        materials.push({
-          name: "Power Outlets",
-          quantity: outletsCount,
-          unit: "units",
-          unitPrice: basePrices.outlets[qualityLevel],
-          totalPrice: outletsCount * basePrices.outlets[qualityLevel],
-          category: "Electrical",
-        })
-
-        const switchesCount = roomsCount + bathroomsCount + 2 // switches for rooms + bathrooms + common areas
-        materials.push({
-          name: "Light Switches",
-          quantity: switchesCount,
-          unit: "units",
-          unitPrice: basePrices.switches[qualityLevel],
-          totalPrice: switchesCount * basePrices.switches[qualityLevel],
-          category: "Electrical",
-        })
+        if (estimationMode === "advanced") {
+          addMaterial("Electrical Panel", Math.max(1, Math.ceil(floorsCount / 2)), "unit", basePrices.electricalPanel[qualityLevel], "Electrical")
+          addMaterial("Circuit Breakers", electricalPointsCount * 0.28, "units", basePrices.breakers[qualityLevel], "Electrical")
+          addMaterial("Power Outlets", electricalPointsCount * 0.7, "units", basePrices.outlets[qualityLevel], "Electrical")
+          addMaterial("Light Switches", electricalPointsCount * 0.45, "units", basePrices.switches[qualityLevel], "Electrical")
+        }
       }
 
-      // Plumbing pipes
-      const pipes = Math.ceil(floorArea * 1.5) // meters
-      materials.push({
-        name: "Plumbing Pipes",
-        quantity: pipes,
-        unit: "meters",
-        unitPrice: basePrices.pipes[qualityLevel],
-        totalPrice: pipes * basePrices.pipes[qualityLevel],
-        category: "Plumbing",
-      })
+      if (hasPlumbing !== false) {
+        const pipesLength = floorAreaTotal * (estimationMode === "advanced" ? 2.2 : 1.6) + bathroomsCount * 7
+        addMaterial("Plumbing Pipes", pipesLength, "meters", basePrices.pipes[qualityLevel], "Plumbing")
 
-      // Advanced plumbing components
-      if (estimationMode === 'advanced') {
-        materials.push({
-          name: "Water Heater",
-          quantity: bathroomsCount,
-          unit: "units",
-          unitPrice: basePrices.waterHeater[qualityLevel],
-          totalPrice: bathroomsCount * basePrices.waterHeater[qualityLevel],
-          category: "Plumbing",
-        })
-
-        materials.push({
-          name: "Toilets",
-          quantity: bathroomsCount,
-          unit: "units",
-          unitPrice: basePrices.toilets[qualityLevel],
-          totalPrice: bathroomsCount * basePrices.toilets[qualityLevel],
-          category: "Plumbing",
-        })
-
-        materials.push({
-          name: "Sinks",
-          quantity: bathroomsCount + 1, // bathroom + kitchen
-          unit: "units",
-          unitPrice: basePrices.sinks[qualityLevel],
-          totalPrice: (bathroomsCount + 1) * basePrices.sinks[qualityLevel],
-          category: "Plumbing",
-        })
-
-        materials.push({
-          name: "Shower Set",
-          quantity: bathroomsCount,
-          unit: "units",
-          unitPrice: basePrices.showerSet[qualityLevel],
-          totalPrice: bathroomsCount * basePrices.showerSet[qualityLevel],
-          category: "Plumbing",
-        })
-
-        materials.push({
-          name: "Valves & Fittings",
-          quantity: Math.ceil(pipes / 10), // ~1 valve per 10m of pipe
-          unit: "units",
-          unitPrice: basePrices.valves[qualityLevel],
-          totalPrice: Math.ceil(pipes / 10) * basePrices.valves[qualityLevel],
-          category: "Plumbing",
-        })
+        if (estimationMode === "advanced") {
+          addMaterial("Water Heater", Math.max(1, Math.ceil(bathroomsCount / 2)), "units", basePrices.waterHeater[qualityLevel], "Plumbing")
+          addMaterial("Toilets", bathroomsCount, "units", basePrices.toilets[qualityLevel], "Plumbing")
+          addMaterial("Sinks", bathroomsCount + 1, "units", basePrices.sinks[qualityLevel], "Plumbing")
+          addMaterial("Shower Set", bathroomsCount, "units", basePrices.showerSet[qualityLevel], "Plumbing")
+          addMaterial("Valves & Fittings", pipesLength / 10, "units", basePrices.valves[qualityLevel], "Plumbing")
+        }
       }
 
-      // Paint (interior + exterior)
-      const paintLiters = Math.ceil((wallArea * 2 + floorArea) * 0.15) // liters
-      materials.push({
-        name: "Paint",
-        quantity: paintLiters,
-        unit: "liters",
-        unitPrice: basePrices.paint[qualityLevel],
-        totalPrice: paintLiters * basePrices.paint[qualityLevel],
-        category: "Finishing",
-      })
+      if (hasFinishing !== false || estimationMode === "simple") {
+        const floorFinishMultiplier = floorCovering === "wood" ? 1.12 : floorCovering === "laminate" ? 1.04 : 1
+        addMaterial("Paint", (wallAreaGross * 1.8 + floorAreaTotal * 0.35) * 0.145, "liters", basePrices.paint[qualityLevel], "Finishing")
+        addMaterial("Floor Tiles", floorAreaTotal * 1.06 * floorFinishMultiplier, "m²", basePrices.tiles[qualityLevel], "Finishing")
 
-      // Floor tiles
-      const tiles = Math.ceil(floorArea * 1.05) // m² with 5% extra
-      materials.push({
-        name: "Floor Tiles",
-        quantity: tiles,
-        unit: "m²",
-        unitPrice: basePrices.tiles[qualityLevel],
-        totalPrice: tiles * basePrices.tiles[qualityLevel],
-        category: "Finishing",
-      })
-
-      // Advanced finishing
-      if (estimationMode === 'advanced') {
-        const bathroomWallTiles = Math.ceil(bathroomsCount * 20) // ~20m² per bathroom
-
-        materials.push({
-          name: "Bathroom Wall Tiles",
-          quantity: bathroomWallTiles,
-          unit: "m²",
-          unitPrice: basePrices.tiles[qualityLevel],
-          totalPrice: bathroomWallTiles * basePrices.tiles[qualityLevel],
-          category: "Finishing",
-        })
-
-        materials.push({
-          name: "Tile Adhesive",
-          quantity: Math.ceil((tiles + bathroomWallTiles) * 0.05), // ~5kg per m²
-          unit: "bags",
-          unitPrice: basePrices.tileAdhesive[qualityLevel],
-          totalPrice: Math.ceil((tiles + bathroomWallTiles) * 0.05) * basePrices.tileAdhesive[qualityLevel],
-          category: "Finishing",
-        })
-
-        materials.push({
-          name: "Grout",
-          quantity: Math.ceil((tiles + bathroomWallTiles) * 0.02), // ~2kg per m²
-          unit: "bags",
-          unitPrice: basePrices.grout[qualityLevel],
-          totalPrice: Math.ceil((tiles + bathroomWallTiles) * 0.02) * basePrices.grout[qualityLevel],
-          category: "Finishing",
-        })
-
-        materials.push({
-          name: "Ceiling Plaster",
-          quantity: Math.ceil(floorArea * 1.05),
-          unit: "m²",
-          unitPrice: basePrices.plaster[qualityLevel],
-          totalPrice: Math.ceil(floorArea * 1.05) * basePrices.plaster[qualityLevel],
-          category: "Finishing",
-        })
+        if (estimationMode === "advanced") {
+          const bathroomWallTiles = bathroomsCount * 19
+          addMaterial("Bathroom Wall Tiles", bathroomWallTiles, "m²", basePrices.tiles[qualityLevel], "Finishing")
+          addMaterial("Tile Adhesive", (floorAreaTotal + bathroomWallTiles) * 0.05, "bags", basePrices.tileAdhesive[qualityLevel], "Finishing")
+          addMaterial("Grout", (floorAreaTotal + bathroomWallTiles) * 0.02, "bags", basePrices.grout[qualityLevel], "Finishing")
+          addMaterial("Ceiling Plaster", floorAreaTotal * 1.03, "m²", basePrices.plaster[qualityLevel], "Finishing")
+        }
       }
 
-      // Windows (estimate based on wall area)
-      const windowCount = Math.ceil(wallArea / 15) // 1 window per 15m² wall
-      materials.push({
-        name: "Windows",
-        quantity: windowCount,
-        unit: "units",
-        unitPrice: basePrices.windows[qualityLevel],
-        totalPrice: windowCount * basePrices.windows[qualityLevel],
-        category: "Openings",
-      })
-
-      // Doors
-      const doorCount = roomsCount + 1 // doors for each room + main door
-      materials.push({
-        name: "Doors",
-        quantity: doorCount,
-        unit: "units",
-        unitPrice: basePrices.doors[qualityLevel],
-        totalPrice: doorCount * basePrices.doors[qualityLevel],
-        category: "Openings",
-      })
+      addMaterial("Windows", wallAreaGross / 16 + floorsCount * 1.5, "units", basePrices.windows[qualityLevel], "Openings")
+      addMaterial("Doors", roomsCount + bathroomsCount + floorsCount, "units", basePrices.doors[qualityLevel], "Openings")
       break
+    }
 
-    case "room":
     case "extension":
-      // Walls
-      const roomBlocks = Math.ceil(wallArea * 12.5)
-      materials.push({
-        name: "Concrete Blocks",
-        quantity: roomBlocks,
-        unit: "pieces",
-        unitPrice: basePrices.blocks[qualityLevel],
-        totalPrice: roomBlocks * basePrices.blocks[qualityLevel],
-        category: "Walls",
-      })
+    case "room": {
+      const isExtension = projectType === "extension"
+      const extensionFactor = isExtension ? 1.15 : 1
+      const connectionFactor = connectsToExisting ? 1.05 : 1
+      const reinforcementFactor = needsStructuralReinforcement ? 1.12 : 1
+      const matchFinishesFactor = matchExistingFinishes ? 1.1 : 1
+      const roomUsageFactor =
+        roomType === "kitchen"
+          ? 1.12
+          : roomType === "bathroom"
+            ? 1.18
+            : roomType === "living_room"
+              ? 1.05
+              : 1
 
-      const roomCement = Math.ceil(wallArea * 0.3)
-      materials.push({
-        name: "Cement (50kg bags)",
-        quantity: roomCement,
-        unit: "bags",
-        unitPrice: basePrices.cement[qualityLevel],
-        totalPrice: roomCement * basePrices.cement[qualityLevel],
-        category: "Walls",
-      })
+      const shellFactor = extensionFactor * connectionFactor * reinforcementFactor * roomUsageFactor
 
-      const roomSand = Math.ceil(wallArea * 0.025)
-      materials.push({
-        name: "Sand",
-        quantity: roomSand,
-        unit: "m³",
-        unitPrice: basePrices.sand[qualityLevel],
-        totalPrice: roomSand * basePrices.sand[qualityLevel],
-        category: "Walls",
-      })
+      addMaterial("Concrete Blocks", wallAreaNet * 12 * wallFactor * shellFactor, "pieces", basePrices.blocks[qualityLevel], "Walls")
+      addMaterial("Cement (50kg bags)", wallAreaNet * 0.28 * shellFactor, "bags", basePrices.cement[qualityLevel], "Walls")
+      addMaterial("Sand", wallAreaNet * 0.024 * shellFactor, "m³", basePrices.sand[qualityLevel], "Walls")
 
-      // Floor
-      const roomTiles = Math.ceil(floorArea * 1.05)
-      materials.push({
-        name: "Floor Tiles",
-        quantity: roomTiles,
-        unit: "m²",
-        unitPrice: basePrices.tiles[qualityLevel],
-        totalPrice: roomTiles * basePrices.tiles[qualityLevel],
-        category: "Finishing",
-      })
+      const coveringFactor =
+        floorCovering === "wood"
+          ? 1.14
+          : floorCovering === "laminate"
+            ? 1.07
+            : floorCovering === "vinyl"
+              ? 0.95
+              : floorCovering === "carpet"
+                ? 0.9
+                : 1
 
-      const roomPaint = Math.ceil(wallArea * 0.15)
-      materials.push({
-        name: "Paint",
-        quantity: roomPaint,
-        unit: "liters",
-        unitPrice: basePrices.paint[qualityLevel],
-        totalPrice: roomPaint * basePrices.paint[qualityLevel],
-        category: "Finishing",
-      })
+      addMaterial("Floor Tiles", floorArea * 1.05 * coveringFactor * matchFinishesFactor, "m²", basePrices.tiles[qualityLevel], "Finishing")
+      addMaterial("Paint", wallAreaGross * 0.16 * matchFinishesFactor, "liters", basePrices.paint[qualityLevel], "Finishing")
 
-      // Electrical
-      const roomWiring = Math.ceil(floorArea * 3)
-      materials.push({
-        name: "Electrical Wiring",
-        quantity: roomWiring,
-        unit: "meters",
-        unitPrice: basePrices.wiring[qualityLevel],
-        totalPrice: roomWiring * basePrices.wiring[qualityLevel],
-        category: "Electrical",
-      })
+      const points = Math.max(4, electricalPoints || Math.ceil(floorArea / 4))
+      addMaterial("Electrical Wiring", floorArea * 3.5 + points * 1.8, "meters", basePrices.wiring[qualityLevel], "Electrical")
+      if (estimationMode === "advanced") {
+        addMaterial("Power Outlets", Math.ceil(points * 0.65), "units", basePrices.outlets[qualityLevel], "Electrical")
+        addMaterial("Light Switches", Math.ceil(points * 0.45), "units", basePrices.switches[qualityLevel], "Electrical")
+      }
 
-      // Door and window
-      materials.push({
-        name: "Door",
-        quantity: 1,
-        unit: "unit",
-        unitPrice: basePrices.doors[qualityLevel],
-        totalPrice: basePrices.doors[qualityLevel],
-        category: "Openings",
-      })
+      if (roomType === "kitchen" || roomType === "bathroom" || estimationMode === "advanced") {
+        addMaterial("Plumbing Pipes", floorArea * (roomType === "bathroom" ? 2.4 : 1.5), "meters", basePrices.pipes[qualityLevel], "Plumbing")
+      }
 
-      const roomWindows = Math.ceil(wallArea / 20)
-      materials.push({
-        name: "Windows",
-        quantity: Math.max(1, roomWindows),
-        unit: "units",
-        unitPrice: basePrices.windows[qualityLevel],
-        totalPrice: Math.max(1, roomWindows) * basePrices.windows[qualityLevel],
-        category: "Openings",
-      })
+      addMaterial("Door", 1, "unit", basePrices.doors[qualityLevel], "Openings")
+      addMaterial("Windows", Math.max(1, wallAreaGross / 20), "units", basePrices.windows[qualityLevel], "Openings")
       break
+    }
 
-    case "wall":
-      const wallBlocks = Math.ceil(wallArea * 12.5)
-      materials.push({
-        name: "Concrete Blocks",
-        quantity: wallBlocks,
-        unit: "pieces",
-        unitPrice: basePrices.blocks[qualityLevel],
-        totalPrice: wallBlocks * basePrices.blocks[qualityLevel],
-        category: "Walls",
-      })
+    case "wall": {
+      const thicknessM = (wallThickness || 20) / 100
+      const reinforcementFactor = reinforcement === "reinforced" ? 1.25 : 1
+      const finishFactor = wallFinish === "painted" ? 1.2 : wallFinish === "plastered" ? 1.1 : 1
+      const footingFactor = wallNeedsFooting ? 1.18 : 1
+      const wallComplexity = thicknessM / 0.2
 
-      const wallCement = Math.ceil(wallArea * 0.3)
-      materials.push({
-        name: "Cement (50kg bags)",
-        quantity: wallCement,
-        unit: "bags",
-        unitPrice: basePrices.cement[qualityLevel],
-        totalPrice: wallCement * basePrices.cement[qualityLevel],
-        category: "Walls",
-      })
+      addMaterial("Concrete Blocks", wallAreaGross * 12.4 * wallComplexity * footingFactor, "pieces", basePrices.blocks[qualityLevel], "Walls")
+      addMaterial("Cement (50kg bags)", wallAreaGross * 0.29 * wallComplexity * footingFactor, "bags", basePrices.cement[qualityLevel], "Walls")
+      addMaterial("Sand", wallAreaGross * 0.024 * wallComplexity * footingFactor, "m³", basePrices.sand[qualityLevel], "Walls")
+      addMaterial("Steel Reinforcement", wallAreaGross * 0.0075 * reinforcementFactor, "tons", basePrices.steel[qualityLevel], "Structure")
 
-      const wallSand = Math.ceil(wallArea * 0.025)
-      materials.push({
-        name: "Sand",
-        quantity: wallSand,
-        unit: "m³",
-        unitPrice: basePrices.sand[qualityLevel],
-        totalPrice: wallSand * basePrices.sand[qualityLevel],
-        category: "Walls",
-      })
-
-      const wallSteel = Math.ceil(wallArea * 0.008)
-      if (wallSteel > 0) {
-        materials.push({
-          name: "Steel Reinforcement",
-          quantity: Math.max(0.1, wallSteel),
-          unit: "tons",
-          unitPrice: basePrices.steel[qualityLevel],
-          totalPrice: Math.max(0.1, wallSteel) * basePrices.steel[qualityLevel],
-          category: "Structure",
-        })
+      if (wallFinish !== "raw") {
+        addMaterial("Paint", wallAreaGross * 0.11 * finishFactor, "liters", basePrices.paint[qualityLevel], "Finishing")
+        addMaterial("Plaster", wallAreaGross * 1.02, "m²", basePrices.plaster[qualityLevel], "Finishing")
       }
       break
+    }
 
-    case "roof":
-      const roofSheets = Math.ceil(roofArea / 2.5)
-      materials.push({
-        name: "Roofing Sheets",
-        quantity: roofSheets,
-        unit: "sheets",
-        unitPrice: basePrices.roofing[qualityLevel],
-        totalPrice: roofSheets * basePrices.roofing[qualityLevel],
-        category: "Roofing",
-      })
+    case "roof": {
+      const slopeFactor = roofSlope ? 1 + Math.max(0, roofSlope - 10) / 120 : 1.1
+      const roofNeedsFactor = (needsLoadBearing ? 1.1 : 1) * (needsInsulation ? 1.08 : 1) * (needsWaterproofing ? 1.1 : 1)
+      const totalRoofArea = roofArea * slopeFactor
 
-      const roofTimber = Math.ceil(roofArea * 0.02 * 1000)
-      materials.push({
-        name: "Timber (structure)",
-        quantity: roofTimber,
-        unit: "linear m",
-        unitPrice: basePrices.wood[qualityLevel],
-        totalPrice: roofTimber * basePrices.wood[qualityLevel],
-        category: "Roofing",
-      })
-
-      const roofPlywood = Math.ceil(roofArea / 2.88)
-      materials.push({
-        name: "Plywood Sheets",
-        quantity: roofPlywood,
-        unit: "sheets",
-        unitPrice: basePrices.plywood[qualityLevel],
-        totalPrice: roofPlywood * basePrices.plywood[qualityLevel],
-        category: "Roofing",
-      })
-
-      const roofInsulation = Math.ceil(roofArea * 1.05)
-      materials.push({
-        name: "Insulation",
-        quantity: roofInsulation,
-        unit: "m²",
-        unitPrice: basePrices.insulation[qualityLevel],
-        totalPrice: roofInsulation * basePrices.insulation[qualityLevel],
-        category: "Roofing",
-      })
+      addMaterial("Roofing Sheets", totalRoofArea / 2.35, "sheets", basePrices.roofing[qualityLevel], "Roofing")
+      addMaterial("Timber (structure)", totalRoofArea * 6.2 * roofNeedsFactor, "linear m", basePrices.wood[qualityLevel], "Roofing")
+      addMaterial("Plywood Sheets", totalRoofArea / 2.75, "sheets", basePrices.plywood[qualityLevel], "Roofing")
+      if (needsInsulation !== false) {
+        addMaterial("Insulation", totalRoofArea * 1.04, "m²", basePrices.insulation[qualityLevel], "Roofing")
+      }
+      if (needsWaterproofing || estimationMode === "advanced") {
+        addMaterial("Waterproofing Membrane", totalRoofArea * 1.06, "m²", basePrices.waterproofing[qualityLevel], "Roofing")
+      }
       break
+    }
 
-    case "foundation":
-      const foundVolume = calculateConcreteVolume(floorArea, 0.2)
-      const foundCement = Math.ceil(foundVolume * 7)
-      materials.push({
-        name: "Cement (50kg bags)",
-        quantity: foundCement,
-        unit: "bags",
-        unitPrice: basePrices.cement[qualityLevel],
-        totalPrice: foundCement * basePrices.cement[qualityLevel],
-        category: "Foundation",
-      })
+    case "foundation": {
+      const depth = Math.max(0.35, foundationDepth || 0.6)
+      const soilFactor = soilType === "clay" ? 1.15 : soilType === "sand" ? 1.08 : soilType === "rock" ? 0.9 : 1
+      const classFactor = concreteClass === "C30" ? 1.1 : concreteClass === "C25" ? 1.05 : 1
+      const rebarRate = Math.max(65, reinforcementRate || 85)
 
-      const foundSand = Math.ceil(foundVolume * 0.5)
-      materials.push({
-        name: "Sand",
-        quantity: foundSand,
-        unit: "m³",
-        unitPrice: basePrices.sand[qualityLevel],
-        totalPrice: foundSand * basePrices.sand[qualityLevel],
-        category: "Foundation",
-      })
+      const foundationVolume = floorArea * depth * 0.55 * soilFactor
 
-      const foundGravel = Math.ceil(foundVolume * 0.95)
-      materials.push({
-        name: "Gravel/Aggregate",
-        quantity: foundGravel,
-        unit: "m³",
-        unitPrice: basePrices.gravel[qualityLevel],
-        totalPrice: foundGravel * basePrices.gravel[qualityLevel],
-        category: "Foundation",
-      })
+      addMaterial("Cement (50kg bags)", foundationVolume * 7.2 * classFactor, "bags", basePrices.cement[qualityLevel], "Foundation")
+      addMaterial("Sand", foundationVolume * 0.5, "m³", basePrices.sand[qualityLevel], "Foundation")
+      addMaterial("Gravel/Aggregate", foundationVolume * 0.94, "m³", basePrices.gravel[qualityLevel], "Foundation")
+      addMaterial("Steel Reinforcement", (foundationVolume * rebarRate) / 1000, "tons", basePrices.steel[qualityLevel], "Foundation")
 
-      const foundSteel = Math.ceil(floorArea * 0.04)
-      materials.push({
-        name: "Steel Reinforcement",
-        quantity: foundSteel,
-        unit: "tons",
-        unitPrice: basePrices.steel[qualityLevel],
-        totalPrice: foundSteel * basePrices.steel[qualityLevel],
-        category: "Foundation",
-      })
+      if (estimationMode === "advanced") {
+        addMaterial("Formwork (rental/materials)", perimeter * depth * 2.1, "m²", basePrices.formwork[qualityLevel], "Foundation")
+      }
       break
+    }
 
-    case "renovation":
-      // Drywall
-      const drywall = Math.ceil(wallArea / 3)
-      materials.push({
-        name: "Drywall Sheets",
-        quantity: drywall,
-        unit: "sheets",
-        unitPrice: basePrices.drywall[qualityLevel],
-        totalPrice: drywall * basePrices.drywall[qualityLevel],
-        category: "Walls",
-      })
+    case "renovation": {
+      const levelFactor = renovationLevel === "complete" ? 1.35 : renovationLevel === "medium" ? 1.15 : 1
+      const demolitionFactor = needsDemolition ? 1.12 : 1
+      const scopeFactor = levelFactor * demolitionFactor
 
-      const renoPaint = Math.ceil(wallArea * 0.18)
-      materials.push({
-        name: "Paint",
-        quantity: renoPaint,
-        unit: "liters",
-        unitPrice: basePrices.paint[qualityLevel],
-        totalPrice: renoPaint * basePrices.paint[qualityLevel],
-        category: "Finishing",
-      })
+      addMaterial("Drywall Sheets", (wallAreaGross / 3) * scopeFactor, "sheets", basePrices.drywall[qualityLevel], "Walls")
+      addMaterial("Paint", wallAreaGross * 0.17 * scopeFactor, "liters", basePrices.paint[qualityLevel], "Finishing")
+      addMaterial("Floor Tiles", floorAreaTotal * 1.08 * scopeFactor, "m²", basePrices.tiles[qualityLevel], "Finishing")
 
-      const renoTiles = Math.ceil(floorArea * 1.1)
-      materials.push({
-        name: "Floor Tiles",
-        quantity: renoTiles,
-        unit: "m²",
-        unitPrice: basePrices.tiles[qualityLevel],
-        totalPrice: renoTiles * basePrices.tiles[qualityLevel],
-        category: "Finishing",
-      })
-
-      const renoWiring = Math.ceil(floorArea * 4)
-      materials.push({
-        name: "Electrical Wiring",
-        quantity: renoWiring,
-        unit: "meters",
-        unitPrice: basePrices.wiring[qualityLevel],
-        totalPrice: renoWiring * basePrices.wiring[qualityLevel],
-        category: "Electrical",
-      })
-
-      const renoPipes = Math.ceil(floorArea * 1.2)
-      materials.push({
-        name: "Plumbing Pipes",
-        quantity: renoPipes,
-        unit: "meters",
-        unitPrice: basePrices.pipes[qualityLevel],
-        totalPrice: renoPipes * basePrices.pipes[qualityLevel],
-        category: "Plumbing",
-      })
+      if (replaceElectrical || estimationMode === "advanced") {
+        addMaterial("Electrical Wiring", floorAreaTotal * 4.1 * scopeFactor, "meters", basePrices.wiring[qualityLevel], "Electrical")
+      }
+      if (replacePlumbing || estimationMode === "advanced") {
+        addMaterial("Plumbing Pipes", floorAreaTotal * 1.25 * scopeFactor, "meters", basePrices.pipes[qualityLevel], "Plumbing")
+      }
+      if (estimationMode === "advanced") {
+        addMaterial("Tile Adhesive", floorAreaTotal * 0.05 * scopeFactor, "bags", basePrices.tileAdhesive[qualityLevel], "Finishing")
+        addMaterial("Grout", floorAreaTotal * 0.02 * scopeFactor, "bags", basePrices.grout[qualityLevel], "Finishing")
+      }
       break
+    }
+  }
+
+  // Apply global complexity and location adjustments to quantities
+  const complexityAdjust = advancedModeBoost * zoneMultiplier
+  for (const item of materials) {
+    item.quantity = Math.round(item.quantity * complexityAdjust * 100) / 100
+    item.totalPrice = Math.round(item.quantity * item.unitPrice * 100) / 100
   }
 
   // Calculate totals

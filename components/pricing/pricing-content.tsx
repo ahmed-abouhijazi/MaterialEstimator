@@ -2,18 +2,26 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Check, Minus } from "lucide-react"
 import { useLocale } from "@/lib/locale-context"
 import { formatCurrency } from "@/lib/currency"
+import { useToast } from "@/hooks/use-toast"
 
 export function PricingContent() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly")
+  const [activatingPlan, setActivatingPlan] = useState<string | null>(null)
+  const { data: session } = useSession()
+  const router = useRouter()
+  const { toast } = useToast()
   const { t, currency } = useLocale()
 
   const plans = [
     {
+      id: "free",
       name: t('pricing.free.name'),
       description: t('pricing.free.description'),
       price: { monthly: 0, yearly: 0 },
@@ -32,6 +40,7 @@ export function PricingContent() {
       highlighted: false,
     },
     {
+      id: "pro",
       name: t('pricing.pro.name'),
       description: t('pricing.pro.description'),
       price: { monthly: 49, yearly: 39 },
@@ -50,6 +59,7 @@ export function PricingContent() {
       highlighted: true,
     },
     {
+      id: "contractor",
       name: t('pricing.contractor.name'),
       description: t('pricing.contractor.description'),
       price: { monthly: 199, yearly: 159 },
@@ -68,6 +78,48 @@ export function PricingContent() {
       highlighted: false,
     },
   ]
+
+  const handlePlanClick = async (planId: string) => {
+    if (planId === "free") {
+      router.push("/estimator")
+      return
+    }
+
+    if (!session?.user?.email) {
+      router.push("/login")
+      return
+    }
+
+    try {
+      setActivatingPlan(planId)
+
+      const response = await fetch("/api/subscription/activate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: planId, billingCycle }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Activation failed")
+      }
+
+      toast({
+        title: "Subscription activated",
+        description: "Plan activated successfully. Payment verification is skipped for now.",
+      })
+
+      router.push("/estimator")
+    } catch (error) {
+      console.error("Subscription activation error:", error)
+      toast({
+        title: "Activation failed",
+        description: "Unable to activate plan right now. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setActivatingPlan(null)
+    }
+  }
 
   const faqs = [
     {
@@ -180,17 +232,31 @@ export function PricingContent() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Link href={plan.href} className="w-full">
+              {plan.id === "free" ? (
+                <Link href={plan.href} className="w-full">
+                  <Button
+                    className={`w-full ${
+                      plan.highlighted
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                        : "bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                    }`}
+                  >
+                    {plan.cta}
+                  </Button>
+                </Link>
+              ) : (
                 <Button
+                  onClick={() => handlePlanClick(plan.id)}
+                  disabled={activatingPlan === plan.id}
                   className={`w-full ${
                     plan.highlighted
                       ? "bg-primary text-primary-foreground hover:bg-primary/90"
                       : "bg-secondary text-secondary-foreground hover:bg-secondary/90"
                   }`}
                 >
-                  {plan.cta}
+                  {activatingPlan === plan.id ? "Activating..." : plan.cta}
                 </Button>
-              </Link>
+              )}
             </CardFooter>
           </Card>
         ))}
