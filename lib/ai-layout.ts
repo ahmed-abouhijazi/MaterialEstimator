@@ -1,5 +1,11 @@
 import type { ProjectType, QualityLevel } from './calculations'
 
+// ─── Safe JSON parser (strips ```json fences the AI sometimes adds) ──────────
+function safeParseJSON(text: string): unknown {
+  const clean = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim()
+  return JSON.parse(clean)
+}
+
 // ─── Provider selection ───────────────────────────────────────────────────────
 // Priority: GITHUB_TOKEN (Copilot) → OPENAI_API_KEY → fallback
 function getProvider(): { apiKey: string; baseUrl: string; model: string } | null {
@@ -159,7 +165,7 @@ export async function generateAILayout(input: AILayoutInput): Promise<AILayoutSu
       return fallbackLayout(input)
     }
 
-    const parsed = JSON.parse(content)
+    const parsed = safeParseJSON(content) as Record<string, unknown>
     const fallback = fallbackLayout(input)
 
     return {

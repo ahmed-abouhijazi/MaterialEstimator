@@ -12,6 +12,12 @@ function getProvider(): { apiKey: string; baseUrl: string; model: string } | nul
   return null
 }
 
+// ─── Safe JSON parser (strips ```json fences the AI sometimes adds) ──────────
+function safeParseJSON(text: string): unknown {
+  const clean = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim()
+  return JSON.parse(clean)
+}
+
 export interface MarketInsight {
   insight: string
   category: 'cost' | 'timing' | 'material' | 'general'
@@ -67,7 +73,7 @@ export async function getMarketInsights(
       return getFallbackInsights(projectType, location)
     }
 
-    const insights = JSON.parse(content)
+    const insights = safeParseJSON(content)
     return Array.isArray(insights) ? insights : getFallbackInsights(projectType, location)
   } catch (error) {
     console.error('Market insights AI failed:', error)

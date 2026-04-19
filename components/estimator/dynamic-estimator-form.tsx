@@ -46,6 +46,7 @@ export function DynamicEstimatorForm() {
   const [aiPlanStatus, setAiPlanStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [aiPlanDetails, setAiPlanDetails] = useState<string | null>(null)
   const [shouldAutoGenerate, setShouldAutoGenerate] = useState(false)
+  const [isPreviewing, setIsPreviewing] = useState(false)
 
   const [formData, setFormData] = useState<Partial<ProjectInput>>({
     estimationMode: "advanced",
@@ -392,10 +393,21 @@ export function DynamicEstimatorForm() {
   const nextStep = () => {
     if (validateStep(currentStep)) {
       const next = Math.min(currentStep + 1, totalSteps) as 1 | 2 | 3
-      // Trigger AI floor plan generation when leaving dimensions step
-      if (currentStep === 2) setShouldAutoGenerate(true)
       setCurrentStep(next)
     }
+  }
+
+  const handlePreviewPlan = () => {
+    if (!validateStep(currentStep)) return
+    setShouldAutoGenerate(false)           // reset first so the flip false→true re-fires useEffect
+    setIsPreviewing(true)
+    setTimeout(() => setShouldAutoGenerate(true), 50)
+  }
+
+  const handleBackToSurvey = () => {
+    setIsPreviewing(false)
+    setShouldAutoGenerate(false)           // reset so next Preview click re-triggers AI
+    setAiPlanStatus('idle')
   }
 
   const prevStep = () => {
@@ -663,18 +675,54 @@ export function DynamicEstimatorForm() {
     return null
   }
 
-  const renderSmartQuestionPanel = () => (
+  const renderSmartQuestionPanel = () => {
+    // Step 1 → visual project-type card grid
+    if (currentStep === 1) {
+      return (
+        <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background shadow-lg">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-xl" style={{ fontFamily: "var(--font-display)" }}>What are you building?</CardTitle>
+            <CardDescription>Choose a project type. The floor plan and all questions adapt instantly.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3">
+              {projectTypes.map((pt) => {
+                const Icon = pt.icon
+                const isSelected = formData.projectType === pt.value
+                return (
+                  <button
+                    key={pt.value}
+                    type="button"
+                    onClick={() => handleSelectAnswer({ step: 1, key: "projectType", title: "", description: "", type: "select" } as SmartQuestion, pt.value)}
+                    className={`flex flex-col items-start gap-1.5 rounded-xl border-2 p-4 text-left transition-all hover:border-primary/60 hover:bg-primary/5 ${
+                      isSelected ? "border-primary bg-primary/10 shadow-md" : "border-border bg-background"
+                    }`}
+                  >
+                    <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <span className="text-sm font-semibold leading-tight text-foreground">{pt.label}</span>
+                    <span className="text-xs leading-snug text-muted-foreground">{pt.description}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )
+    }
+
+    // Steps 2-3 → scrollable question list
+    return (
     <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background shadow-lg">
       <CardHeader className="space-y-2">
         <CardTitle className="text-xl" style={{ fontFamily: "var(--font-display)" }}>
-          {currentStep === 1 ? "Choose Project Type" : currentStep === 2 ? "Dimensions & Space" : "Quality & Services"}
+          {currentStep === 2 ? "Dimensions & Space" : "Quality & Services"}
         </CardTitle>
         <CardDescription>
-          {currentStep === 1
-            ? "Select the type of project. The floor plan and all questions will adapt automatically."
-            : currentStep === 2
-              ? "Enter your dimensions. The 2D floor plan updates live and AI will generate an optimised layout."
-              : "Set location, material quality, and which services to include in the estimate."}
+          {currentStep === 2
+            ? "Enter your dimensions. The floor plan updates live as you type."
+            : "Set location, material quality, and which services to include."}
         </CardDescription>
         <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
           <div className="rounded-lg border border-border bg-background/70 px-3 py-2">
@@ -763,10 +811,12 @@ export function DynamicEstimatorForm() {
         </ScrollArea>
       </CardContent>
     </Card>
-  )
+    )
+  } // end renderSmartQuestionPanel
 
   return (
     <div className="mx-auto max-w-6xl">
+      {/* ── Page header ─────────────────────────────────────────────────────── */}
       <div className="mb-8 text-center">
         <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-primary">
           <Calculator className="h-4 w-4" />
@@ -778,48 +828,34 @@ export function DynamicEstimatorForm() {
         <p className="mx-auto max-w-2xl text-lg text-muted-foreground">{t("estimator.subtitle")}</p>
       </div>
 
-      <div className="mb-10">
-        <div className="mb-4 flex flex-wrap justify-between gap-2">
-          {[1, 2, 3].map((step) => (
-            <div key={step} className="min-w-[110px] flex-1">
-              <div className="flex flex-col items-center gap-2">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold transition-all ${
-                  currentStep === step
-                    ? "scale-110 bg-primary text-primary-foreground shadow-lg"
-                    : currentStep > step
-                      ? "bg-primary/20 text-primary"
-                      : "bg-muted text-muted-foreground"
-                }`}>
-                  {step}
-                </div>
-                <div className={`text-center text-xs font-medium transition-colors md:text-sm ${currentStep >= step ? "text-primary" : "text-muted-foreground"}`}>
-                  {getStepLabel(step)}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <Progress value={progress} className="h-3 rounded-full" />
-      </div>
+      {/* ── FloorPlan2D — always rendered so internal AI state is preserved ── */}
+      {/* Visibility is controlled by the grid layout below */}
 
-      <div className="mb-8 grid gap-6 xl:grid-cols-[1.45fr_0.95fr] xl:items-start">
-        <FloorPlan2D
-          projectType={formData.projectType || "house"}
-          length={formData.length}
-          width={formData.width}
-          height={formData.height}
-          numberOfRooms={formData.numberOfRooms}
-          numberOfBathrooms={formData.numberOfBathrooms}
-          numberOfFloors={formData.numberOfFloors}
-          layoutIntent={formData.layoutIntent}
-          hasBalcony={formData.hasBalcony}
-          autoGenerate={shouldAutoGenerate}
-          onDimensionChange={(field, value) => updateField(field, value as never)}
-          onStatusChange={(status) => setAiPlanStatus(status)}
-        />
-        <div className="flex flex-col gap-4">
+      {isPreviewing ? (
+        /* ═══════════════════════════════════════════════════════════════════
+           PREVIEW MODE — AI floor plan + project summary + action buttons
+           ═══════════════════════════════════════════════════════════════════ */
+        <>
+          {/* Preview header */}
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold text-secondary" style={{ fontFamily: "var(--font-display)" }}>2D Floor Plan Preview</h2>
+              <p className="text-sm text-muted-foreground">AI-generated layout based on your project specifications. Go back to modify answers.</p>
+            </div>
+            <div className="flex gap-3">
+              <Button type="button" variant="outline" onClick={handleBackToSurvey} className="h-11 border-2 hover:border-primary">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Modify Answers
+              </Button>
+              <Button type="button" onClick={() => void handleSubmit()} disabled={isCalculating} className="h-11 text-base shadow-lg">
+                {isCalculating ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Calculating…</> : <><Calculator className="mr-2 h-4 w-4" />Get Estimate</>}
+              </Button>
+            </div>
+          </div>
+
+          {/* AI status banner */}
           {aiPlanStatus !== "idle" && (
-            <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
+            <div className={`mb-4 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
               aiPlanStatus === "loading" ? "border-primary/30 bg-primary/5 text-primary" :
               aiPlanStatus === "success" ? "border-green-500/30 bg-green-500/5 text-green-700 dark:text-green-400" :
               "border-destructive/30 bg-destructive/5 text-destructive"
@@ -828,65 +864,171 @@ export function DynamicEstimatorForm() {
               {aiPlanStatus === "success" && <CheckCircle2 className="h-4 w-4" />}
               {aiPlanStatus === "error" && <Bot className="h-4 w-4" />}
               <span>
-                {aiPlanStatus === "loading" ? "AI is generating your floor plan…" :
-                 aiPlanStatus === "success" ? "AI floor plan ready" :
-                 "Using default layout (AI unavailable)"}
+                {aiPlanStatus === "loading" ? "AI is generating your customised floor plan…" :
+                 aiPlanStatus === "success" ? "AI floor plan ready — based on all your project details" :
+                 "Using smart default layout (AI unavailable)"}
               </span>
               {aiPlanDetails && <span className="ml-auto text-xs opacity-70">{aiPlanDetails}</span>}
             </div>
           )}
-          {renderSmartQuestionPanel()}
-        </div>
-      </div>
 
-      <form onSubmit={(event) => {
-        event.preventDefault()
-        if (currentStep === totalSteps) {
-          void handleSubmit()
-          return
-        }
-        nextStep()
-      }}>
-        <div className="space-y-6">
-          {renderStepContent()}
+          {/* Main preview grid: floor plan (left) + project summary (right) */}
+          <div className="grid gap-6 xl:grid-cols-[2fr_1fr] xl:items-start">
+            <FloorPlan2D
+              projectType={formData.projectType || "house"}
+              length={formData.length}
+              width={formData.width}
+              height={formData.height}
+              numberOfRooms={formData.numberOfRooms}
+              numberOfBathrooms={formData.numberOfBathrooms}
+              numberOfFloors={formData.numberOfFloors}
+              layoutIntent={formData.layoutIntent}
+              hasBalcony={formData.hasBalcony}
+              autoGenerate={shouldAutoGenerate}
+              onDimensionChange={(field, value) => updateField(field, value as never)}
+              onStatusChange={(status) => setAiPlanStatus(status)}
+            />
 
-          <div className="flex flex-col justify-between gap-3 pt-4 sm:flex-row sm:gap-4">
-            {currentStep > 1 && (
-              <Button type="button" variant="outline" onClick={prevStep} className="h-12 flex-1 border-2 hover:border-primary" size="lg">
-                <ArrowLeft className="mr-2 h-5 w-5" />
-                {t("estimator.previous") || "Previous"}
-              </Button>
-            )}
+            {/* Project summary card */}
+            <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background shadow-lg">
+              <CardHeader>
+                <CardTitle style={{ fontFamily: "var(--font-display)" }}>Project Summary</CardTitle>
+                <CardDescription>Review your specifications before calculating the estimate.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Project type */}
+                <div className="flex items-center gap-3 rounded-lg border border-border bg-background px-3 py-2">
+                  {(() => { const pt = projectTypes.find(p => p.value === formData.projectType); const Icon = pt?.icon || Home; return <Icon className="h-5 w-5 text-primary" /> })()}
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Project Type</p>
+                    <p className="text-sm font-semibold">{projectTypes.find(p => p.value === formData.projectType)?.label || "—"}</p>
+                  </div>
+                </div>
 
-            {currentStep < totalSteps ? (
-              <Button type="submit" className="ml-auto h-12 flex-1 text-base shadow-lg hover:shadow-xl" size="lg">
-                {t("estimator.next") || "Next"}
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            ) : (
-              <Button type="submit" disabled={isCalculating} className="ml-auto h-12 flex-1 text-base shadow-lg hover:shadow-xl" size="lg">
-                {isCalculating ? (
-                  <>
-                    <Calculator className="mr-2 h-5 w-5 animate-pulse" />
-                    {t("estimator.calculating")}
-                  </>
-                ) : (
-                  <>
-                    <Calculator className="mr-2 h-5 w-5" />
-                    {t("estimator.calculate")}
-                  </>
-                )}
-              </Button>
-            )}
+                {/* Dimensions */}
+                <div className="rounded-lg border border-border bg-background px-3 py-2">
+                  <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Dimensions</p>
+                  <p className="text-sm font-semibold">
+                    {formData.length ?? "—"}m × {formData.width ?? "—"}m, {formData.height ?? "—"}m height
+                  </p>
+                  {formData.numberOfFloors && <p className="text-xs text-muted-foreground">{formData.numberOfFloors} floor{(formData.numberOfFloors ?? 1) > 1 ? "s" : ""}{formData.numberOfRooms ? ` · ${formData.numberOfRooms} rooms` : ""}{formData.numberOfBathrooms ? ` · ${formData.numberOfBathrooms} bath` : ""}</p>}
+                </div>
+
+                {/* Location & quality */}
+                <div className="rounded-lg border border-border bg-background px-3 py-2">
+                  <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Location & Quality</p>
+                  <p className="text-sm font-semibold">{formData.location || "—"}{formData.zone ? ` (${formData.zone})` : ""}</p>
+                  <p className="text-xs text-muted-foreground capitalize">{formData.qualityLevel || "standard"} quality</p>
+                </div>
+
+                {/* Services */}
+                <div className="rounded-lg border border-border bg-background px-3 py-2">
+                  <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">Services Included</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {formData.hasElectricity && <span className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs text-primary">Electrical</span>}
+                    {formData.hasPlumbing && <span className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs text-primary">Plumbing</span>}
+                    {formData.hasFinishing && <span className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs text-primary">Finishing</span>}
+                    {!formData.hasElectricity && !formData.hasPlumbing && !formData.hasFinishing && <span className="text-xs text-muted-foreground">Structure only</span>}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {errors.submit && (
-            <div className="rounded-lg border-2 border-destructive bg-destructive/10 p-4 text-center text-destructive">
+            <div className="mt-4 rounded-lg border-2 border-destructive bg-destructive/10 p-4 text-center text-destructive">
               {errors.submit}
             </div>
           )}
-        </div>
-      </form>
+        </>
+      ) : (
+        /* ═══════════════════════════════════════════════════════════════════
+           SURVEY MODE — step indicator + floor plan + question panel + nav
+           ═══════════════════════════════════════════════════════════════════ */
+        <>
+          {/* Step indicator */}
+          <div className="mb-10">
+            <div className="mb-4 flex flex-wrap justify-between gap-2">
+              {[1, 2, 3].map((step) => (
+                <div key={step} className="min-w-[110px] flex-1">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold transition-all ${
+                      currentStep === step
+                        ? "scale-110 bg-primary text-primary-foreground shadow-lg"
+                        : currentStep > step
+                          ? "bg-primary/20 text-primary"
+                          : "bg-muted text-muted-foreground"
+                    }`}>
+                      {currentStep > step ? <CheckCircle2 className="h-5 w-5" /> : step}
+                    </div>
+                    <div className={`text-center text-xs font-medium transition-colors md:text-sm ${currentStep >= step ? "text-primary" : "text-muted-foreground"}`}>
+                      {getStepLabel(step)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Progress value={progress} className="h-3 rounded-full" />
+          </div>
+
+          {/* Floor plan + question panel */}
+          <div className={`mb-8 grid gap-6 xl:items-start ${currentStep === 1 ? "xl:grid-cols-1" : "xl:grid-cols-[1.45fr_0.95fr]"}`}>
+            {currentStep !== 1 && (
+              <FloorPlan2D
+                projectType={formData.projectType || "house"}
+                length={formData.length}
+                width={formData.width}
+                height={formData.height}
+                numberOfRooms={formData.numberOfRooms}
+                numberOfBathrooms={formData.numberOfBathrooms}
+                numberOfFloors={formData.numberOfFloors}
+                layoutIntent={formData.layoutIntent}
+                hasBalcony={formData.hasBalcony}
+                autoGenerate={false}
+                onDimensionChange={(field, value) => updateField(field, value as never)}
+                onStatusChange={(status) => setAiPlanStatus(status)}
+              />
+            )}
+            <div className={currentStep === 1 ? "mx-auto w-full max-w-2xl" : "flex flex-col gap-4"}>
+              {renderSmartQuestionPanel()}
+            </div>
+          </div>
+
+          {/* Navigation form */}
+          <form onSubmit={(event) => { event.preventDefault(); nextStep() }}>
+            <div className="space-y-6">
+              {renderStepContent()}
+
+              <div className="flex flex-col justify-between gap-3 pt-4 sm:flex-row sm:gap-4">
+                {currentStep > 1 && (
+                  <Button type="button" variant="outline" onClick={prevStep} className="h-12 flex-1 border-2 hover:border-primary" size="lg">
+                    <ArrowLeft className="mr-2 h-5 w-5" />
+                    {t("estimator.previous") || "Previous"}
+                  </Button>
+                )}
+
+                {currentStep < totalSteps ? (
+                  <Button type="submit" className="ml-auto h-12 flex-1 text-base shadow-lg hover:shadow-xl" size="lg">
+                    {t("estimator.next") || "Next"}
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                ) : (
+                  <Button type="button" onClick={handlePreviewPlan} className="ml-auto h-12 flex-1 text-base shadow-lg hover:shadow-xl" size="lg">
+                    <Sparkles className="mr-2 h-5 w-5" />
+                    Preview Plan
+                  </Button>
+                )}
+              </div>
+
+              {errors.submit && (
+                <div className="rounded-lg border-2 border-destructive bg-destructive/10 p-4 text-center text-destructive">
+                  {errors.submit}
+                </div>
+              )}
+            </div>
+          </form>
+        </>
+      )}
     </div>
   )
 }

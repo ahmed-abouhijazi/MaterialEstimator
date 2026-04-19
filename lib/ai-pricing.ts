@@ -12,6 +12,12 @@ function getProvider(): { apiKey: string; baseUrl: string; model: string } | nul
   return null
 }
 
+// ─── Safe JSON parser (strips ```json fences the AI sometimes adds) ──────────
+function safeParseJSON(text: string): unknown {
+  const clean = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim()
+  return JSON.parse(clean)
+}
+
 // Location-based price multipliers using AI-powered regional analysis
 const locationMultipliers: Record<string, number> = {
   "United States - Northeast": 1.25,
@@ -124,7 +130,7 @@ async function getAIPriceAdjustment(
     }
 
     // Parse JSON response
-    const parsed = JSON.parse(content)
+    const parsed = safeParseJSON(content) as AIAdjustment
     
     // Validate multiplier is reasonable (0.7 to 1.8)
     if (parsed.multiplier < 0.7 || parsed.multiplier > 1.8) {
@@ -186,7 +192,7 @@ export async function getSeasonalPricing(
       return []
     }
 
-    return JSON.parse(content)
+    return safeParseJSON(content) as { material: string; advice: string }[]
   } catch (error) {
     console.error('Seasonal pricing AI failed:', error)
     return []

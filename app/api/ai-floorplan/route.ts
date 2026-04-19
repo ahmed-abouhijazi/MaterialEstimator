@@ -26,6 +26,12 @@ export interface AIFloorPlanLayout {
   generatedByAI: boolean
 }
 
+// ─── Safe JSON parser (strips ```json fences the AI sometimes adds) ──────────
+function safeParseJSON(text: string): unknown {
+  const clean = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim()
+  return JSON.parse(clean)
+}
+
 // ─── Provider selection ───────────────────────────────────────────────────────
 // Priority: GITHUB_TOKEN (Copilot) → OPENAI_API_KEY → deterministic fallback
 
@@ -226,7 +232,7 @@ Where all Frac values are between 0 and 1 (fraction of building footprint).`
 
     console.log('[AI FloorPlan] ► Raw AI content:', content)
 
-    const parsed = JSON.parse(content)
+    const parsed = safeParseJSON(content) as Record<string, unknown>
     const rooms = validateRooms(parsed?.rooms)
     if (!rooms) {
       console.warn('[AI FloorPlan] ✗ Room validation failed, using fallback. Parsed:', JSON.stringify(parsed))
