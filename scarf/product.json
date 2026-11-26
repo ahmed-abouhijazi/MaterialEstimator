@@ -1,25 +1,57 @@
 {
-  "id": "ribbed-fringe-scarf",
-  "name": "Chunky Ribbed Fringe Scarf",
-  "name_ar": "كوفية مضلّعة بشراشيب",
-  "tagline": "Thick & cozy",
-  "tagline_ar": "تقيلة ودافية",
-  "price": 700,
-  "cat": "scarves",
-  "featured": true,
-  "inStock": true,
-  "tint": false,
-  "desc": "A thick, chunky ribbed scarf with soft knotted fringe on both ends. Wraps around twice for extra warmth. Handmade by Hadeer.",
-  "desc_ar": "كوفية تخينة بغرزة مضلّعة وشراشيب معقودة في الطرفين. بتتلف مرتين حوالين الرقبة عشان دفا زيادة. معمولة بإيد هدير.",
-  "optLabel": "Length", "optLabel_ar": "الطول",
-  "opts": [
-    { "k": "regular", "label": "Regular · 150 cm", "label_ar": "عادي · ١٥٠ سم", "add": 0 },
-    { "k": "long", "label": "Long · 180 cm", "label_ar": "طويل · ١٨٠ سم", "add": 120 }
-  ],
-  "colors": [
-    { "name": "Chocolate brown", "ar": "بني شوكولاتة", "hex": "#5A2E1E", "image": "brown-1-mannequin.jpg" },
-    { "name": "Soft grey", "ar": "رمادي فاتح", "hex": "#9AA4B0", "image": "grey-1-mannequin.jpg" }
-  ],
-  "image": "brown-1-mannequin.jpg",
-  "images": ["brown-2-wrapped.jpg", "brown-4-flatlay.jpg", "brown-3-knotted.jpg", "grey-1-mannequin.jpg", "grey-2-folded.jpg", "grey-3-fringe.jpg", "grey-4-flat.jpg", "grey-5-stitch-closeup.jpg"]
+ "id": "ribbed-fringe-scarf",
+ "name": "Chunky Ribbed Fringe Scarf",
+ "name_ar": "كوفية مضلّعة بشراشيب",
+ "tagline": "Thick & cozy",
+ "tagline_ar": "تقيلة ودافية",
+ "price": 700,
+ "cat": "scarves",
+ "featured": true,
+ "inStock": true,
+ "tint": false,
+ "desc": "A thick, chunky ribbed scarf with soft knotted fringe on both ends. Wraps around twice for extra warmth. Handmade by Hadeer.",
+ "desc_ar": "كوفية تخينة بغرزة مضلّعة وشراشيب معقودة في الطرفين. بتتلف مرتين حوالين الرقبة عشان دفا زيادة. معمولة بإيد هدير.",
+ "optLabel": "Length",
+ "optLabel_ar": "الطول",
+ "opts": [
+  {
+   "k": "regular",
+   "label": "Regular · 150 cm",
+   "label_ar": "عادي · ١٥٠ سم",
+   "add": 0
+  },
+  {
+   "k": "long",
+   "label": "Long · 180 cm",
+   "label_ar": "طويل · ١٨٠ سم",
+   "add": 120
+  }
+ ],
+ "colors": [
+  {
+   "name": "Chocolate brown",
+   "ar": "بني شوكولاتة",
+   "hex": "#5A2E1E",
+   "image": "https://8p2d5pwu9pe49nkj.public.blob.vercel-storage.com/uploads/products/1795722116249-brown-1-mannequin-Jpuftv0TI8c1rCumaxr8VGWd8j6kvy.jpg"
+  },
+  {
+   "name": "Soft grey",
+   "ar": "رمادي فاتح",
+   "hex": "#9AA4B0",
+   "image": "https://8p2d5pwu9pe49nkj.public.blob.vercel-storage.com/uploads/products/1795722119175-grey-1-mannequin-nXTjHMcvu9P6G1rp8tqqKkMS0qSf6k.jpg"
+  }
+ ],
+ "image": "https://8p2d5pwu9pe49nkj.public.blob.vercel-storage.com/uploads/products/1795722116249-brown-1-mannequin-Jpuftv0TI8c1rCumaxr8VGWd8j6kvy.jpg",
+ "images": [
+  "https://8p2d5pwu9pe49nkj.public.blob.vercel-storage.com/uploads/products/1795722117094-brown-2-wrapped-npW9g9C2M1yshZH8haCg3RQL8kBUNF.jpg",
+  "https://8p2d5pwu9pe49nkj.public.blob.vercel-storage.com/uploads/products/1795722117883-brown-4-flatlay-7eNCi9xnLkJA3GZO3l1LEiS31TIScs.jpg",
+  "https://8p2d5pwu9pe49nkj.public.blob.vercel-storage.com/uploads/products/1795722118696-brown-3-knotted-IM1f2X6sanWJEDfXq461vWRGOPRn43.jpg",
+  "https://8p2d5pwu9pe49nkj.public.blob.vercel-storage.com/uploads/products/1795722119175-grey-1-mannequin-nXTjHMcvu9P6G1rp8tqqKkMS0qSf6k.jpg",
+  "https://8p2d5pwu9pe49nkj.public.blob.vercel-storage.com/uploads/products/1795722119872-grey-2-folded-x2TgrA6Nb7c1BBu2xOupsD9bR1JzDn.jpg",
+  "https://8p2d5pwu9pe49nkj.public.blob.vercel-storage.com/uploads/products/1795722120392-grey-3-fringe-765kECfGVN1lc5uqpw1FnXriyr7WH3.jpg",
+  "https://8p2d5pwu9pe49nkj.public.blob.vercel-storage.com/uploads/products/1795722120963-grey-4-flat-tA2mXbGUUjKlHSyd4DfP7CXf4I3Z2q.jpg",
+  "https://8p2d5pwu9pe49nkj.public.blob.vercel-storage.com/uploads/products/1795722121717-grey-5-stitch-closeup-ynXSXgGZsaDEvq0xiMLHh07MCmiA8o.jpg"
+ ],
+ "promo": "promo.jpg",
+ "isNew": true
 }
