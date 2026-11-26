@@ -1,0 +1,25 @@
+{
+  "id": "ribbed-fringe-scarf",
+  "name": "Chunky Ribbed Fringe Scarf",
+  "name_ar": "كوفية مضلّعة بشراشيب",
+  "tagline": "Thick & cozy",
+  "tagline_ar": "تقيلة ودافية",
+  "price": 700,
+  "cat": "scarves",
+  "featured": true,
+  "inStock": true,
+  "tint": false,
+  "desc": "A thick, chunky ribbed scarf with soft knotted fringe on both ends. Wraps around twice for extra warmth. Handmade by Hadeer.",
+  "desc_ar": "كوفية تخينة بغرزة مضلّعة وشراشيب معقودة في الطرفين. بتتلف مرتين حوالين الرقبة عشان دفا زيادة. معمولة بإيد هدير.",
+  "optLabel": "Length", "optLabel_ar": "الطول",
+  "opts": [
+    { "k": "regular", "label": "Regular · 150 cm", "label_ar": "عادي · ١٥٠ سم", "add": 0 },
+    { "k": "long", "label": "Long · 180 cm", "label_ar": "طويل · ١٨٠ سم", "add": 120 }
+  ],
+  "colors": [
+    { "name": "Chocolate brown", "ar": "بني شوكولاتة", "hex": "#5A2E1E", "image": "brown-1-mannequin.jpg" },
+    { "name": "Soft grey", "ar": "رمادي فاتح", "hex": "#9AA4B0", "image": "grey-1-mannequin.jpg" }
+  ],
+  "image": "brown-1-mannequin.jpg",
+  "images": ["brown-2-wrapped.jpg", "brown-4-flatlay.jpg", "brown-3-knotted.jpg", "grey-1-mannequin.jpg", "grey-2-folded.jpg", "grey-3-fringe.jpg", "grey-4-flat.jpg", "grey-5-stitch-closeup.jpg"]
+}
